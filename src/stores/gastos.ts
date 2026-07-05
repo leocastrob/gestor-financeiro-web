@@ -35,8 +35,8 @@ export const useGastosStore = defineStore('gastos', () => {
     erro.value = null
     
     try {
-      // Front e API rodam no mesmo servidor Fastify
-      const resposta = await fetch(`/gastos/${telefone.value}`)
+      // Rotas da API ficam em /api/gastos para não conflitar com o frontend
+      const resposta = await fetch(`/api/gastos/${telefone.value}`)
       
       if (!resposta.ok) {
         throw new Error('Falha ao buscar os dados do servidor')
