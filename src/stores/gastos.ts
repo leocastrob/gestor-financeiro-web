@@ -35,8 +35,8 @@ export const useGastosStore = defineStore('gastos', () => {
     erro.value = null
     
     try {
-      // O proxy do Vite redireciona /api/* para localhost:3000
-      const resposta = await fetch(`/api/gastos/${telefone.value}`)
+      // Front e API rodam no mesmo servidor Fastify
+      const resposta = await fetch(`/gastos/${telefone.value}`)
       
       if (!resposta.ok) {
         throw new Error('Falha ao buscar os dados do servidor')
