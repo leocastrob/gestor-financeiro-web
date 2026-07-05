@@ -1,10 +1,26 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGastosStore } from '../stores/gastos'
 
 const router = useRouter()
 const gastosStore = useGastosStore()
+
+const meses = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+]
+
+const mesAtual = new Date().getMonth() + 1
+const anoAtual = new Date().getFullYear()
+
+const filtroMes = ref(mesAtual)
+const filtroAno = ref(anoAtual)
+
+// Dispara a busca sempre que o mês ou ano mudar
+watch([filtroMes, filtroAno], () => {
+  gastosStore.buscarGastos(filtroMes.value, filtroAno.value)
+})
 
 // Formata o telefone para exibição: +55 12 98872-3791
 const telefoneFormatado = () => {
@@ -21,7 +37,7 @@ const sair = () => {
 }
 
 onMounted(() => {
-  gastosStore.buscarGastos()
+  gastosStore.buscarGastos(filtroMes.value, filtroAno.value)
 })
 </script>
 
@@ -44,6 +60,27 @@ onMounted(() => {
         >
           ← Trocar
         </button>
+      </div>
+
+      <!-- Filtros -->
+      <div class="flex gap-4 mb-6">
+        <select 
+          v-model="filtroMes"
+          class="bg-white/5 border border-white/10 text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 w-full appearance-none"
+        >
+          <option v-for="(mes, index) in meses" :key="index" :value="index + 1" class="bg-slate-800 text-white">
+            {{ mes }}
+          </option>
+        </select>
+
+        <select 
+          v-model="filtroAno"
+          class="bg-white/5 border border-white/10 text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 w-full appearance-none"
+        >
+          <option :value="anoAtual - 1" class="bg-slate-800 text-white">{{ anoAtual - 1 }}</option>
+          <option :value="anoAtual" class="bg-slate-800 text-white">{{ anoAtual }}</option>
+          <option :value="anoAtual + 1" class="bg-slate-800 text-white">{{ anoAtual + 1 }}</option>
+        </select>
       </div>
 
       <!-- Estado de Carregamento -->

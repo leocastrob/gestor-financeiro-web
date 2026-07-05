@@ -38,16 +38,20 @@ export const useGastosStore = defineStore('gastos', () => {
     telefone.value = num
   }
 
-  // Ação: Busca os gastos filtrados por número de telefone
-  const buscarGastos = async () => {
+  // Ação: Busca os gastos filtrados por número de telefone e data
+  const buscarGastos = async (mes?: number, ano?: number) => {
     if (!telefone.value) return
 
     carregando.value = true
     erro.value = null
     
     try {
-      // Rotas da API ficam em /api/gastos para não conflitar com o frontend
-      const resposta = await fetch(`/api/gastos/${telefone.value}`)
+      let url = `/api/gastos/${telefone.value}`
+      if (mes && ano) {
+        url += `?mes=${mes}&ano=${ano}`
+      }
+      
+      const resposta = await fetch(url)
       
       if (!resposta.ok) {
         throw new Error('Falha ao buscar os dados do servidor')
