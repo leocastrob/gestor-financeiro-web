@@ -10,10 +10,11 @@ export interface Transacao {
 }
 
 export const useGastosStore = defineStore('gastos', () => {
-  // Estado: Onde vamos guardar a lista que vier do servidor
+  // Estado
   const transacoes = ref<Transacao[]>([])
   const carregando = ref(false)
   const erro = ref<string | null>(null)
+  const telefone = ref<string | null>(null)
 
   // Computed: Total de gastos formatado
   const totalGastos = computed(() => {
@@ -21,14 +22,21 @@ export const useGastosStore = defineStore('gastos', () => {
     return total.toFixed(2).replace('.', ',')
   })
 
+  // Define o telefone do usuário logado
+  const setTelefone = (num: string) => {
+    telefone.value = num
+  }
+
   // Ação: Busca os gastos filtrados por número de telefone
-  const buscarGastos = async (telefone: string) => {
+  const buscarGastos = async () => {
+    if (!telefone.value) return
+
     carregando.value = true
     erro.value = null
     
     try {
-      // Substitua pelo IP real do seu Moto G se ele mudar
-      const resposta = await fetch(`http://192.168.1.189:3000/gastos/${telefone}`)
+      // O proxy do Vite redireciona /api/* para localhost:3000
+      const resposta = await fetch(`/api/gastos/${telefone.value}`)
       
       if (!resposta.ok) {
         throw new Error('Falha ao buscar os dados do servidor')
@@ -45,5 +53,10 @@ export const useGastosStore = defineStore('gastos', () => {
     }
   }
 
-  return { transacoes, carregando, erro, totalGastos, buscarGastos }
+  const logout = () => {
+    telefone.value = null
+    transacoes.value = []
+  }
+
+  return { transacoes, carregando, erro, telefone, totalGastos, setTelefone, buscarGastos, logout }
 })
