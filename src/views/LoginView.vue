@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGastosStore } from '../stores/gastos'
 
@@ -8,6 +8,12 @@ const gastosStore = useGastosStore()
 const telefone = ref('')
 const erro = ref('')
 const focado = ref(false)
+
+onMounted(() => {
+  if (gastosStore.telefone) {
+    router.push('/gastos')
+  }
+})
 
 // Formata o número enquanto digita: 55 12 98872-3791
 const telefoneFormatado = () => {

@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 
 export interface Transacao {
@@ -10,11 +10,22 @@ export interface Transacao {
 }
 
 export const useGastosStore = defineStore('gastos', () => {
+  // Inicializa o telefone buscando do localStorage se existir
+  const telefone = ref<string>(localStorage.getItem('gestor_telefone') || '')
+  
+  // Observa qualquer mudança no telefone para salvar no localStorage
+  watch(telefone, (novoValor) => {
+    if (novoValor) {
+      localStorage.setItem('gestor_telefone', novoValor)
+    } else {
+      localStorage.removeItem('gestor_telefone')
+    }
+  })
+
   // Estado
   const transacoes = ref<Transacao[]>([])
   const carregando = ref(false)
   const erro = ref<string | null>(null)
-  const telefone = ref<string | null>(null)
 
   // Computed: Total de gastos formatado
   const totalGastos = computed(() => {
@@ -53,10 +64,33 @@ export const useGastosStore = defineStore('gastos', () => {
     }
   }
 
+  // Ação: Exclui um gasto específico
+  const excluirGasto = async (id: number | string) => {
+    try {
+      const resposta = await fetch(`/api/gastos/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ telefone: telefone.value })
+      })
+
+      if (!resposta.ok) {
+        throw new Error('Falha ao excluir o gasto.')
+      }
+
+      // Remove localmente sem precisar buscar do servidor novamente
+      transacoes.value = transacoes.value.filter(t => t.id !== id)
+    } catch (e) {
+      console.error(e)
+      alert('Erro ao excluir o gasto. Tente novamente.')
+    }
+  }
+
   const logout = () => {
-    telefone.value = null
+    telefone.value = ''
     transacoes.value = []
   }
 
-  return { transacoes, carregando, erro, telefone, totalGastos, setTelefone, buscarGastos, logout }
+  return { transacoes, carregando, erro, telefone, totalGastos, setTelefone, buscarGastos, excluirGasto, logout }
 })
