@@ -5,6 +5,7 @@ export interface Transacao {
   id: number | string
   telefone: string
   descricao: string
+  categoria: string
   valor: number | string
   data: string | Date
 }

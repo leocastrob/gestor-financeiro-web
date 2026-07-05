@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGastosStore } from '../stores/gastos'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import { Doughnut } from 'vue-chartjs'
+
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 const router = useRouter()
 const gastosStore = useGastosStore()
@@ -16,6 +20,44 @@ const anoAtual = new Date().getFullYear()
 
 const filtroMes = ref(mesAtual)
 const filtroAno = ref(anoAtual)
+
+// Computed Property para processar os dados do Gráfico
+const dadosGrafico = computed(() => {
+  const contagem: Record<string, number> = {}
+  
+  gastosStore.transacoes.forEach(g => {
+    const cat = g.categoria || 'Outros'
+    const valor = Number(g.valor)
+    if (!contagem[cat]) contagem[cat] = 0
+    contagem[cat] += valor
+  })
+  
+  return {
+    labels: Object.keys(contagem),
+    datasets: [
+      {
+        backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#64748B'],
+        data: Object.values(contagem),
+        borderWidth: 0,
+        hoverOffset: 4
+      }
+    ]
+  }
+})
+
+// Opções do Gráfico
+const opcoesGrafico = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'right' as const,
+      labels: {
+        color: '#cbd5e1'
+      }
+    }
+  }
+}
 
 // Dispara a busca sempre que o mês ou ano mudar
 watch([filtroMes, filtroAno], () => {
@@ -114,14 +156,24 @@ onMounted(() => {
           </div>
         </div>
 
+        <!-- Gráfico de Categorias -->
+        <div v-if="gastosStore.transacoes.length > 0" class="bg-white/5 border border-white/10 rounded-2xl p-5 mb-4 h-64">
+          <Doughnut :data="dadosGrafico" :options="opcoesGrafico" />
+        </div>
+
         <!-- Itens -->
         <div v-for="gasto in gastosStore.transacoes" :key="gasto.id"
           class="flex justify-between items-center p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/5 hover:border-white/10 hover:bg-white/[0.07] transition-all duration-200">
           <div class="flex flex-col">
             <span class="text-lg font-bold text-slate-200">{{ gasto.descricao }}</span>
-            <span class="text-xs text-slate-500 font-medium mt-1">
-              {{ new Date(gasto.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) }}
-            </span>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-md font-medium">
+                {{ gasto.categoria || 'Outros' }}
+              </span>
+              <span class="text-xs text-slate-500 font-medium">
+                {{ new Date(gasto.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) }}
+              </span>
+            </div>
           </div>
           <div class="flex items-center gap-4">
             <div class="text-xl font-black text-rose-400">
