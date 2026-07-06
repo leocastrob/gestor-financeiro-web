@@ -24,14 +24,14 @@ const filtroAno = ref(anoAtual)
 // Computed Property para processar os dados do Gráfico
 const dadosGrafico = computed(() => {
   const contagem: Record<string, number> = {}
-  
+
   gastosStore.transacoes.forEach(g => {
     const cat = g.categoria || 'Outros'
     const valor = Number(g.valor)
     if (!contagem[cat]) contagem[cat] = 0
     contagem[cat] += valor
   })
-  
+
   return {
     labels: Object.keys(contagem),
     datasets: [
@@ -90,38 +90,28 @@ onMounted(() => {
       <!-- Cabeçalho -->
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <img src="/logogestor.png" alt="Logo" class="w-8 h-8 object-contain" />
-            Gestor Financeiro
-          </h1>
+          <h1 class="text-2xl font-extrabold text-white tracking-tight">💸 Gestor Financeiro</h1>
           <p class="text-emerald-400 text-sm font-mono mt-1">
             📱 {{ telefoneFormatado() }}
           </p>
         </div>
-        <button
-          id="btn-sair"
-          @click="sair"
-          class="bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:border-white/20 text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200"
-        >
+        <button id="btn-sair" @click="sair"
+          class="bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:border-white/20 text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200">
           ← Trocar
         </button>
       </div>
 
       <!-- Filtros -->
       <div class="flex gap-4 mb-6">
-        <select 
-          v-model="filtroMes"
-          class="bg-white/5 border border-white/10 text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 w-full appearance-none"
-        >
+        <select v-model="filtroMes"
+          class="bg-white/5 border border-white/10 text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 w-full appearance-none">
           <option v-for="(mes, index) in meses" :key="index" :value="index + 1" class="bg-slate-800 text-white">
             {{ mes }}
           </option>
         </select>
 
-        <select 
-          v-model="filtroAno"
-          class="bg-white/5 border border-white/10 text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 w-full appearance-none"
-        >
+        <select v-model="filtroAno"
+          class="bg-white/5 border border-white/10 text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 w-full appearance-none">
           <option :value="anoAtual - 1" class="bg-slate-800 text-white">{{ anoAtual - 1 }}</option>
           <option :value="anoAtual" class="bg-slate-800 text-white">{{ anoAtual }}</option>
           <option :value="anoAtual + 1" class="bg-slate-800 text-white">{{ anoAtual + 1 }}</option>
@@ -131,7 +121,8 @@ onMounted(() => {
       <!-- Estado de Carregamento -->
       <div v-if="gastosStore.carregando" class="flex justify-center items-center py-20">
         <div class="flex flex-col items-center">
-          <div class="h-10 w-10 border-4 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin mb-4"></div>
+          <div class="h-10 w-10 border-4 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin mb-4">
+          </div>
           <p class="text-slate-400 font-medium">Buscando gastos...</p>
         </div>
       </div>
@@ -160,7 +151,8 @@ onMounted(() => {
         </div>
 
         <!-- Gráfico de Categorias -->
-        <div v-if="gastosStore.transacoes.length > 0" class="bg-white/5 border border-white/10 rounded-2xl p-5 mb-4 h-64">
+        <div v-if="gastosStore.transacoes.length > 0"
+          class="bg-white/5 border border-white/10 rounded-2xl p-5 mb-4 h-64">
           <Doughnut :data="dadosGrafico" :options="opcoesGrafico" />
         </div>
 
@@ -174,7 +166,8 @@ onMounted(() => {
                 {{ gasto.categoria || 'Outros' }}
               </span>
               <span class="text-xs text-slate-500 font-medium">
-                {{ new Date(gasto.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) }}
+                {{ new Date(gasto.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+                }}
               </span>
             </div>
           </div>
@@ -182,13 +175,13 @@ onMounted(() => {
             <div class="text-xl font-black text-rose-400">
               R$ {{ Number(gasto.valor).toFixed(2).replace('.', ',') }}
             </div>
-            <button
-              @click="gastosStore.excluirGasto(gasto.id)"
+            <button @click="gastosStore.excluirGasto(gasto.id)"
               class="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
-              title="Excluir gasto"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              title="Excluir gasto">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
             </button>
           </div>

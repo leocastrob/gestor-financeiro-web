@@ -19,18 +19,18 @@ interface Pais {
 }
 
 const paises: Pais[] = [
-  { codigo: '55',  bandeira: '🇧🇷', nome: 'Brasil',       mascara: '00 00 00000-0000', maxDigitos: 13 },
-  { codigo: '54',  bandeira: '🇦🇷', nome: 'Argentina',     mascara: '00 00 0000-0000',  maxDigitos: 12 },
-  { codigo: '598', bandeira: '🇺🇾', nome: 'Uruguai',       mascara: '000 00 000-000',   maxDigitos: 11 },
-  { codigo: '595', bandeira: '🇵🇾', nome: 'Paraguai',      mascara: '000 000 000-000',  maxDigitos: 12 },
-  { codigo: '56',  bandeira: '🇨🇱', nome: 'Chile',         mascara: '00 0 0000-0000',   maxDigitos: 11 },
-  { codigo: '57',  bandeira: '🇨🇴', nome: 'Colômbia',      mascara: '00 000 000-0000',  maxDigitos: 12 },
-  { codigo: '58',  bandeira: '🇻🇪', nome: 'Venezuela',     mascara: '00 000 000-0000',  maxDigitos: 12 },
-  { codigo: '51',  bandeira: '🇵🇪', nome: 'Peru',          mascara: '00 000 000-000',   maxDigitos: 11 },
-  { codigo: '593', bandeira: '🇪🇨', nome: 'Equador',       mascara: '000 00 000-0000',  maxDigitos: 12 },
-  { codigo: '591', bandeira: '🇧🇴', nome: 'Bolívia',       mascara: '000 0 000-0000',   maxDigitos: 11 },
-  { codigo: '592', bandeira: '🇬🇾', nome: 'Guiana',        mascara: '000 000-0000',     maxDigitos: 10 },
-  { codigo: '597', bandeira: '🇸🇷', nome: 'Suriname',      mascara: '000 000-000',      maxDigitos: 9  },
+  { codigo: '55', bandeira: '🇧🇷', nome: 'Brasil', mascara: '00 00 00000-0000', maxDigitos: 13 },
+  { codigo: '54', bandeira: '🇦🇷', nome: 'Argentina', mascara: '00 00 0000-0000', maxDigitos: 12 },
+  { codigo: '598', bandeira: '🇺🇾', nome: 'Uruguai', mascara: '000 00 000-000', maxDigitos: 11 },
+  { codigo: '595', bandeira: '🇵🇾', nome: 'Paraguai', mascara: '000 000 000-000', maxDigitos: 12 },
+  { codigo: '56', bandeira: '🇨🇱', nome: 'Chile', mascara: '00 0 0000-0000', maxDigitos: 11 },
+  { codigo: '57', bandeira: '🇨🇴', nome: 'Colômbia', mascara: '00 000 000-0000', maxDigitos: 12 },
+  { codigo: '58', bandeira: '🇻🇪', nome: 'Venezuela', mascara: '00 000 000-0000', maxDigitos: 12 },
+  { codigo: '51', bandeira: '🇵🇪', nome: 'Peru', mascara: '00 000 000-000', maxDigitos: 11 },
+  { codigo: '593', bandeira: '🇪🇨', nome: 'Equador', mascara: '000 00 000-0000', maxDigitos: 12 },
+  { codigo: '591', bandeira: '🇧🇴', nome: 'Bolívia', mascara: '000 0 000-0000', maxDigitos: 11 },
+  { codigo: '592', bandeira: '🇬🇾', nome: 'Guiana', mascara: '000 000-0000', maxDigitos: 10 },
+  { codigo: '597', bandeira: '🇸🇷', nome: 'Suriname', mascara: '000 000-000', maxDigitos: 9 },
 ]
 
 const paisSelecionado = ref<Pais>(paises[0]!)
@@ -140,11 +140,10 @@ const aoTeclar = (event: KeyboardEvent) => {
 
       <!-- Logo / Ícone -->
       <div class="text-center mb-8">
-        <img
-          src="/logogestor.png"
-          alt="Gestor Financeiro Logo"
-          class="inline-block w-24 h-24 mb-4 object-contain drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]"
-        />
+        <div
+          class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-500/30 mb-4">
+          <span class="text-4xl">💸</span>
+        </div>
         <h1 class="text-3xl font-extrabold text-white tracking-tight">
           Gestor Financeiro
         </h1>
@@ -169,47 +168,30 @@ const aoTeclar = (event: KeyboardEvent) => {
 
           <!-- Seletor de País -->
           <div ref="dropdownRef" class="relative flex-shrink-0">
-            <button
-              id="btn-pais-selector"
-              type="button"
-              @click.stop="dropdownAberto = !dropdownAberto"
-              class="flex items-center gap-1.5 pl-3 pr-2 py-4 rounded-l-2xl hover:bg-white/5 transition-colors duration-200 cursor-pointer group"
-            >
+            <button id="btn-pais-selector" type="button" @click.stop="dropdownAberto = !dropdownAberto"
+              class="flex items-center gap-1.5 pl-3 pr-2 py-4 rounded-l-2xl hover:bg-white/5 transition-colors duration-200 cursor-pointer group">
               <span class="text-2xl leading-none">{{ paisSelecionado.bandeira }}</span>
               <span class="text-emerald-400 font-bold text-base select-none">+{{ paisSelecionado.codigo }}</span>
               <svg
                 :class="['w-3.5 h-3.5 text-slate-400 transition-transform duration-200', dropdownAberto ? 'rotate-180' : '']"
-                fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"
-              >
+                fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
             <!-- Dropdown de países -->
-            <Transition
-              enter-active-class="transition duration-200 ease-out"
-              enter-from-class="opacity-0 -translate-y-2 scale-95"
-              enter-to-class="opacity-100 translate-y-0 scale-100"
+            <Transition enter-active-class="transition duration-200 ease-out"
+              enter-from-class="opacity-0 -translate-y-2 scale-95" enter-to-class="opacity-100 translate-y-0 scale-100"
               leave-active-class="transition duration-150 ease-in"
-              leave-from-class="opacity-100 translate-y-0 scale-100"
-              leave-to-class="opacity-0 -translate-y-2 scale-95"
-            >
-              <div
-                v-if="dropdownAberto"
-                class="absolute top-full left-0 mt-2 w-64 max-h-72 overflow-y-auto bg-slate-800/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 z-50 py-2 scrollbar-thin"
-              >
-                <button
-                  v-for="pais in paises"
-                  :key="pais.codigo"
-                  type="button"
-                  @click="selecionarPais(pais)"
-                  :class="[
-                    'w-full flex items-center gap-3 px-4 py-3 text-left transition-colors duration-150 cursor-pointer',
-                    pais.codigo === paisSelecionado.codigo
-                      ? 'bg-emerald-500/15 text-emerald-300'
-                      : 'text-slate-300 hover:bg-white/5 hover:text-white'
-                  ]"
-                >
+              leave-from-class="opacity-100 translate-y-0 scale-100" leave-to-class="opacity-0 -translate-y-2 scale-95">
+              <div v-if="dropdownAberto"
+                class="absolute top-full left-0 mt-2 w-64 max-h-72 overflow-y-auto bg-slate-800/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 z-50 py-2 scrollbar-thin">
+                <button v-for="pais in paises" :key="pais.codigo" type="button" @click="selecionarPais(pais)" :class="[
+                  'w-full flex items-center gap-3 px-4 py-3 text-left transition-colors duration-150 cursor-pointer',
+                  pais.codigo === paisSelecionado.codigo
+                    ? 'bg-emerald-500/15 text-emerald-300'
+                    : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                ]">
                   <span class="text-2xl leading-none">{{ pais.bandeira }}</span>
                   <span class="flex-1 text-sm font-medium">{{ pais.nome }}</span>
                   <span class="text-xs font-mono text-slate-400">+{{ pais.codigo }}</span>
@@ -221,19 +203,10 @@ const aoTeclar = (event: KeyboardEvent) => {
           <!-- Divisor vertical -->
           <div class="w-px h-7 bg-white/10 flex-shrink-0"></div>
 
-          <input
-            id="telefone-input"
-            type="text"
-            inputmode="numeric"
-            :value="telefoneFormatado()"
-            @input="aoDigitar"
-            @keydown="aoTeclar"
-            @focus="focado = true"
-            @blur="focado = false"
-            :placeholder="placeholderPais()"
+          <input id="telefone-input" type="text" inputmode="numeric" :value="telefoneFormatado()" @input="aoDigitar"
+            @keydown="aoTeclar" @focus="focado = true" @blur="focado = false" :placeholder="placeholderPais()"
             class="w-full py-4 pr-4 pl-3 bg-transparent text-white text-xl font-mono tracking-wider placeholder-slate-500/50 focus:outline-none"
-            autocomplete="off"
-          />
+            autocomplete="off" />
         </div>
 
         <!-- Dica de formato -->
