@@ -140,10 +140,11 @@ const aoTeclar = (event: KeyboardEvent) => {
 
       <!-- Logo / Ícone -->
       <div class="text-center mb-8">
-        <div
-          class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-500/30 mb-4">
-          <span class="text-4xl">💸</span>
-        </div>
+        <img
+          src="/logogestor.png"
+          alt="Gestor Financeiro Logo"
+          class="inline-block w-24 h-24 mb-4 object-contain drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]"
+        />
         <h1 class="text-3xl font-extrabold text-white tracking-tight">
           Gestor Financeiro
         </h1>

@@ -90,7 +90,10 @@ onMounted(() => {
       <!-- Cabeçalho -->
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-extrabold text-white tracking-tight">💸 Gestor Financeiro</h1>
+          <h1 class="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            <img src="/logogestor.png" alt="Logo" class="w-8 h-8 object-contain" />
+            Gestor Financeiro
+          </h1>
           <p class="text-emerald-400 text-sm font-mono mt-1">
             📱 {{ telefoneFormatado() }}
           </p>
