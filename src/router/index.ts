@@ -14,6 +14,11 @@ const router = createRouter({
       name: 'gastos',
       component: () => import('../views/GastosView.vue'),
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('../views/NotFoundView.vue'),
+    },
   ],
 })
 

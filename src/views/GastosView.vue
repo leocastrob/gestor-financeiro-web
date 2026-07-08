@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useGastosStore } from '../stores/gastos'
+import { useGastosStore, CATEGORIAS, type Transacao } from '../stores/gastos'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Doughnut } from 'vue-chartjs'
 
@@ -9,6 +9,35 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 
 const router = useRouter()
 const gastosStore = useGastosStore()
+
+// --- Edição inline de um gasto ---
+const editandoId = ref<number | string | null>(null)
+const formDescricao = ref('')
+const formCategoria = ref('')
+const formValor = ref('')
+const salvando = ref(false)
+
+const iniciarEdicao = (gasto: Transacao) => {
+  editandoId.value = gasto.id
+  formDescricao.value = gasto.descricao
+  formCategoria.value = gasto.categoria || 'Outros'
+  formValor.value = String(gasto.valor)
+}
+
+const cancelarEdicao = () => {
+  editandoId.value = null
+}
+
+const salvarEdicao = async (id: number | string) => {
+  salvando.value = true
+  const sucesso = await gastosStore.editarGasto(id, {
+    descricao: formDescricao.value.trim(),
+    categoria: formCategoria.value,
+    valor: Number(formValor.value.replace(',', '.')),
+  })
+  salvando.value = false
+  if (sucesso) editandoId.value = null
+}
 
 const meses = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -135,6 +164,15 @@ onMounted(() => {
       <!-- Lista de Gastos -->
       <div v-else class="space-y-3">
 
+        <!-- Erro de uma ação pontual (excluir/editar) -->
+        <div v-if="gastosStore.erroAcao"
+          class="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex justify-between items-center gap-3">
+          <p class="text-red-400 text-sm font-semibold">{{ gastosStore.erroAcao }}</p>
+          <button @click="gastosStore.erroAcao = null" class="text-red-400/70 hover:text-red-300 text-lg leading-none">
+            ✕
+          </button>
+        </div>
+
         <!-- Card de Total -->
         <div v-if="gastosStore.transacoes.length > 0"
           class="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20 rounded-2xl p-5 flex justify-between items-center mb-2">
@@ -158,32 +196,69 @@ onMounted(() => {
 
         <!-- Itens -->
         <div v-for="gasto in gastosStore.transacoes" :key="gasto.id"
-          class="flex justify-between items-center p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/5 hover:border-white/10 hover:bg-white/[0.07] transition-all duration-200">
-          <div class="flex flex-col">
-            <span class="text-lg font-bold text-slate-200">{{ gasto.descricao }}</span>
-            <div class="flex items-center gap-2 mt-1">
-              <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-md font-medium">
-                {{ gasto.categoria || 'Outros' }}
-              </span>
-              <span class="text-xs text-slate-500 font-medium">
-                {{ new Date(gasto.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
-                }}
-              </span>
+          class="p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/5 hover:border-white/10 hover:bg-white/[0.07] transition-all duration-200">
+
+          <!-- Modo edição -->
+          <div v-if="editandoId === gasto.id" class="space-y-3">
+            <input v-model="formDescricao" type="text" placeholder="Descrição"
+              class="w-full bg-white/5 border border-white/10 text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400" />
+            <div class="flex gap-3">
+              <select v-model="formCategoria"
+                class="flex-1 bg-white/5 border border-white/10 text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400 appearance-none">
+                <option v-for="cat in CATEGORIAS" :key="cat" :value="cat" class="bg-slate-800">{{ cat }}</option>
+              </select>
+              <input v-model="formValor" type="text" inputmode="decimal" placeholder="Valor"
+                class="w-28 bg-white/5 border border-white/10 text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400" />
+            </div>
+            <div class="flex justify-end gap-2">
+              <button @click="cancelarEdicao" :disabled="salvando"
+                class="px-4 py-2 text-sm font-semibold text-slate-400 hover:text-white transition-colors">
+                Cancelar
+              </button>
+              <button @click="salvarEdicao(gasto.id)" :disabled="salvando"
+                class="px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors disabled:opacity-50">
+                {{ salvando ? 'Salvando...' : 'Salvar' }}
+              </button>
             </div>
           </div>
-          <div class="flex items-center gap-4">
-            <div class="text-xl font-black text-rose-400">
-              R$ {{ Number(gasto.valor).toFixed(2).replace('.', ',') }}
+
+          <!-- Modo visualização -->
+          <div v-else class="flex justify-between items-center">
+            <div class="flex flex-col">
+              <span class="text-lg font-bold text-slate-200">{{ gasto.descricao }}</span>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-md font-medium">
+                  {{ gasto.categoria || 'Outros' }}
+                </span>
+                <span class="text-xs text-slate-500 font-medium">
+                  {{ new Date(gasto.data).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+                  }}
+                </span>
+              </div>
             </div>
-            <button @click="gastosStore.excluirGasto(gasto.id)"
-              class="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
-              title="Excluir gasto">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+            <div class="flex items-center gap-2">
+              <div class="text-xl font-black text-rose-400 mr-2">
+                R$ {{ Number(gasto.valor).toFixed(2).replace('.', ',') }}
+              </div>
+              <button @click="iniciarEdicao(gasto)"
+                class="p-2 text-slate-500 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-lg transition-all"
+                title="Editar gasto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <button @click="gastosStore.excluirGasto(gasto.id)"
+                class="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
+                title="Excluir gasto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 

@@ -2,12 +2,32 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGastosStore } from '../stores/gastos'
+import * as api from '../services/api'
 
 const router = useRouter()
 const gastosStore = useGastosStore()
 const telefone = ref('')
 const erro = ref('')
 const focado = ref(false)
+
+// --- Etapa de PIN (verificação de identidade via WhatsApp) ---
+const etapa = ref<'telefone' | 'pin'>('telefone')
+const pin = ref('')
+const enviando = ref(false)
+const segundosParaReenviar = ref(0)
+let timerReenvio: ReturnType<typeof setInterval> | null = null
+
+const iniciarContagemReenvio = () => {
+  segundosParaReenviar.value = 30
+  if (timerReenvio) clearInterval(timerReenvio)
+  timerReenvio = setInterval(() => {
+    segundosParaReenviar.value -= 1
+    if (segundosParaReenviar.value <= 0 && timerReenvio) {
+      clearInterval(timerReenvio)
+      timerReenvio = null
+    }
+  }, 1000)
+}
 
 // --- Seletor de país ---
 interface Pais {
@@ -59,6 +79,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', fecharDropdown)
+  if (timerReenvio) clearInterval(timerReenvio)
 })
 
 // Formata o número enquanto digita (formato genérico)
@@ -117,17 +138,62 @@ const minimoDigitosLocal = () => {
   return maxDigitosSemCodigo() - 2
 }
 
-const entrar = () => {
+const enviarCodigo = async () => {
   if (telefone.value.length < minimoDigitosLocal()) {
     erro.value = `Número incompleto. Insira o número completo com DDD.`
     return
   }
-  gastosStore.setTelefone(numeroCompleto())
-  router.push('/gastos')
+
+  erro.value = ''
+  enviando.value = true
+  try {
+    await api.solicitarPin(numeroCompleto())
+    etapa.value = 'pin'
+    pin.value = ''
+    iniciarContagemReenvio()
+  } catch (e) {
+    erro.value = e instanceof Error ? e.message : 'Não foi possível enviar o código.'
+  } finally {
+    enviando.value = false
+  }
+}
+
+const confirmarCodigo = async () => {
+  if (pin.value.trim().length !== 6) {
+    erro.value = 'Digite o código de 6 dígitos que você recebeu no WhatsApp.'
+    return
+  }
+
+  erro.value = ''
+  enviando.value = true
+  try {
+    await api.confirmarPin(numeroCompleto(), pin.value.trim())
+    gastosStore.setTelefone(numeroCompleto())
+    router.push('/gastos')
+  } catch (e) {
+    erro.value = e instanceof Error ? e.message : 'Código inválido.'
+  } finally {
+    enviando.value = false
+  }
+}
+
+const voltarParaTelefone = () => {
+  etapa.value = 'telefone'
+  pin.value = ''
+  erro.value = ''
+  if (timerReenvio) {
+    clearInterval(timerReenvio)
+    timerReenvio = null
+  }
+  segundosParaReenviar.value = 0
 }
 
 const aoTeclar = (event: KeyboardEvent) => {
-  if (event.key === 'Enter') entrar()
+  if (event.key === 'Enter') enviarCodigo()
+}
+
+const aoTeclarPin = (event: KeyboardEvent) => {
+  if (event.key === 'Enter') confirmarCodigo()
 }
 </script>
 
@@ -152,8 +218,8 @@ const aoTeclar = (event: KeyboardEvent) => {
         </p>
       </div>
 
-      <!-- Card -->
-      <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+      <!-- Card: etapa 1, telefone -->
+      <div v-if="etapa === 'telefone'" class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
 
         <label class="block text-sm font-semibold text-slate-300 mb-3">
           📱 Número do WhatsApp
@@ -225,14 +291,69 @@ const aoTeclar = (event: KeyboardEvent) => {
         </div>
 
         <!-- Botão -->
-        <button id="btn-entrar" @click="entrar" :disabled="telefone.length < minimoDigitosLocal()" :class="[
+        <button id="btn-entrar" @click="enviarCodigo" :disabled="telefone.length < minimoDigitosLocal() || enviando" :class="[
           'w-full mt-6 py-4 rounded-2xl font-bold text-lg tracking-wide transition-all duration-300',
-          telefone.length >= minimoDigitosLocal()
+          telefone.length >= minimoDigitosLocal() && !enviando
             ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98]'
             : 'bg-white/5 text-slate-500 cursor-not-allowed'
         ]">
-          Ver meus gastos →
+          {{ enviando ? 'Enviando código...' : 'Enviar código pelo WhatsApp →' }}
         </button>
+
+      </div>
+
+      <!-- Card: etapa 2, confirmação do PIN -->
+      <div v-else class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+
+        <label class="block text-sm font-semibold text-slate-300 mb-3">
+          🔐 Código de verificação
+        </label>
+        <p class="text-xs text-slate-500 mb-4">
+          Enviamos um código de 6 dígitos pelo WhatsApp para
+          {{ paisSelecionado.bandeira }} +{{ numeroCompleto() }}.
+        </p>
+
+        <input id="pin-input" type="text" inputmode="numeric" maxlength="6" v-model="pin" @keydown="aoTeclarPin"
+          placeholder="000000" autocomplete="off"
+          :class="[
+            'w-full py-4 px-4 rounded-2xl border-2 bg-white/5 text-white text-2xl font-mono tracking-[0.5em] text-center placeholder-slate-500/50 focus:outline-none transition-all duration-300',
+            erro ? 'border-red-400/60' : 'border-white/10 focus:border-emerald-400 focus:shadow-lg focus:shadow-emerald-500/20'
+          ]" />
+
+        <!-- Mensagem de erro -->
+        <div v-if="erro" class="mt-3 flex items-center gap-2 text-red-400 text-sm font-medium animate-pulse">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd" />
+          </svg>
+          {{ erro }}
+        </div>
+
+        <!-- Botão confirmar -->
+        <button id="btn-confirmar-pin" @click="confirmarCodigo" :disabled="pin.trim().length !== 6 || enviando" :class="[
+          'w-full mt-6 py-4 rounded-2xl font-bold text-lg tracking-wide transition-all duration-300',
+          pin.trim().length === 6 && !enviando
+            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98]'
+            : 'bg-white/5 text-slate-500 cursor-not-allowed'
+        ]">
+          {{ enviando ? 'Confirmando...' : 'Confirmar →' }}
+        </button>
+
+        <!-- Reenviar / voltar -->
+        <div class="flex justify-between items-center mt-4">
+          <button id="btn-voltar" type="button" @click="voltarParaTelefone"
+            class="text-sm text-slate-400 hover:text-white transition-colors duration-200">
+            ← Trocar número
+          </button>
+          <button id="btn-reenviar" type="button" @click="enviarCodigo" :disabled="segundosParaReenviar > 0 || enviando"
+            :class="[
+              'text-sm font-semibold transition-colors duration-200',
+              segundosParaReenviar > 0 || enviando ? 'text-slate-600 cursor-not-allowed' : 'text-emerald-400 hover:text-emerald-300'
+            ]">
+            {{ segundosParaReenviar > 0 ? `Reenviar em ${segundosParaReenviar}s` : 'Reenviar código' }}
+          </button>
+        </div>
 
       </div>
 

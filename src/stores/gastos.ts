@@ -1,5 +1,7 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
+import * as api from '../services/api'
+import type { DadosEdicaoGasto } from '../services/api'
 
 export interface Transacao {
   id: number | string
@@ -10,10 +12,12 @@ export interface Transacao {
   data: string | Date
 }
 
+export const CATEGORIAS = ['Alimentação', 'Transporte', 'Lazer', 'Saúde', 'Moradia', 'Pets', 'Outros']
+
 export const useGastosStore = defineStore('gastos', () => {
   // Inicializa o telefone buscando do localStorage se existir
   const telefone = ref<string>(localStorage.getItem('gestor_telefone') || '')
-  
+
   // Observa qualquer mudança no telefone para salvar no localStorage
   watch(telefone, (novoValor) => {
     if (novoValor) {
@@ -27,6 +31,8 @@ export const useGastosStore = defineStore('gastos', () => {
   const transacoes = ref<Transacao[]>([])
   const carregando = ref(false)
   const erro = ref<string | null>(null)
+  // Erro de uma ação pontual (excluir/editar) — exibido como banner dispensável, não bloqueia a tela
+  const erroAcao = ref<string | null>(null)
 
   // Computed: Total de gastos formatado
   const totalGastos = computed(() => {
@@ -45,22 +51,9 @@ export const useGastosStore = defineStore('gastos', () => {
 
     carregando.value = true
     erro.value = null
-    
+
     try {
-      let url = `/api/gastos/${telefone.value}`
-      if (mes && ano) {
-        url += `?mes=${mes}&ano=${ano}`
-      }
-      
-      const resposta = await fetch(url)
-      
-      if (!resposta.ok) {
-        throw new Error('Falha ao buscar os dados do servidor')
-      }
-      
-      const dados = await resposta.json()
-      transacoes.value = dados
-      
+      transacoes.value = await api.buscarGastos(telefone.value, mes, ano)
     } catch (e) {
       console.error(e)
       erro.value = 'Não foi possível conectar ao servidor.'
@@ -71,24 +64,29 @@ export const useGastosStore = defineStore('gastos', () => {
 
   // Ação: Exclui um gasto específico
   const excluirGasto = async (id: number | string) => {
+    erroAcao.value = null
     try {
-      const resposta = await fetch(`/api/gastos/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ telefone: telefone.value })
-      })
-
-      if (!resposta.ok) {
-        throw new Error('Falha ao excluir o gasto.')
-      }
-
+      await api.excluirGasto(id, telefone.value)
       // Remove localmente sem precisar buscar do servidor novamente
-      transacoes.value = transacoes.value.filter(t => t.id !== id)
+      transacoes.value = transacoes.value.filter((t) => t.id !== id)
     } catch (e) {
       console.error(e)
-      alert('Erro ao excluir o gasto. Tente novamente.')
+      erroAcao.value = 'Erro ao excluir o gasto. Tente novamente.'
+    }
+  }
+
+  // Ação: Edita descrição/categoria/valor de um gasto
+  const editarGasto = async (id: number | string, dados: DadosEdicaoGasto) => {
+    erroAcao.value = null
+    try {
+      await api.editarGasto(id, telefone.value, dados)
+      const item = transacoes.value.find((t) => t.id === id)
+      if (item) Object.assign(item, dados)
+      return true
+    } catch (e) {
+      console.error(e)
+      erroAcao.value = 'Erro ao editar o gasto. Tente novamente.'
+      return false
     }
   }
 
@@ -97,5 +95,17 @@ export const useGastosStore = defineStore('gastos', () => {
     transacoes.value = []
   }
 
-  return { transacoes, carregando, erro, telefone, totalGastos, setTelefone, buscarGastos, excluirGasto, logout }
+  return {
+    transacoes,
+    carregando,
+    erro,
+    erroAcao,
+    telefone,
+    totalGastos,
+    setTelefone,
+    buscarGastos,
+    excluirGasto,
+    editarGasto,
+    logout,
+  }
 })
