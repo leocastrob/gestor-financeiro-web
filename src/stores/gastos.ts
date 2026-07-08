@@ -1,7 +1,7 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import * as api from '../services/api'
-import type { DadosEdicaoGasto } from '../services/api'
+import type { DadosEdicaoGasto, DadosNovoGasto } from '../services/api'
 import { formatarMoeda } from '../utils/formatarMoeda'
 
 export interface Transacao {
@@ -61,6 +61,19 @@ export const useGastosStore = defineStore('gastos', () => {
     }
   }
 
+  // Ação: Cria um gasto novo direto pelo portal (mesmo caminho de dados do WhatsApp).
+  // Retorna o registro criado (com categoria já resolvida) ou null em caso de erro.
+  const criarGasto = async (dados: DadosNovoGasto): Promise<Transacao | null> => {
+    erroAcao.value = null
+    try {
+      return await api.criarGasto(telefone.value, dados)
+    } catch (e) {
+      console.error(e)
+      erroAcao.value = e instanceof Error ? e.message : 'Erro ao adicionar o gasto. Tente novamente.'
+      return null
+    }
+  }
+
   // Ação: Exclui um gasto específico
   const excluirGasto = async (id: number | string) => {
     erroAcao.value = null
@@ -104,6 +117,7 @@ export const useGastosStore = defineStore('gastos', () => {
     totalGastosNumerico,
     setTelefone,
     buscarGastos,
+    criarGasto,
     excluirGasto,
     editarGasto,
     logout,

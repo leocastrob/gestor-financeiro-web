@@ -127,6 +127,46 @@ const cancelarEdicao = () => {
   editandoId.value = null
 }
 
+// --- Novo gasto (adicionar direto pelo portal, sem precisar do WhatsApp) ---
+const adicionandoAberto = ref(false)
+const novaDescricao = ref('')
+const novaCategoria = ref('') // vazio = categorização automática (mesma lógica do bot)
+const novoValor = ref('')
+const criando = ref(false)
+
+const novoGastoValido = computed(() => {
+  const valor = Number(novoValor.value.replace(',', '.'))
+  return novaDescricao.value.trim().length > 0 && valor > 0
+})
+
+const abrirNovoGasto = () => {
+  adicionandoAberto.value = true
+  novaDescricao.value = ''
+  novaCategoria.value = ''
+  novoValor.value = ''
+}
+
+const cancelarNovoGasto = () => {
+  adicionandoAberto.value = false
+}
+
+const confirmarNovoGasto = async () => {
+  if (!novoGastoValido.value) return
+  criando.value = true
+  const criado = await gastosStore.criarGasto({
+    descricao: novaDescricao.value.trim(),
+    valor: Number(novoValor.value.replace(',', '.')),
+    categoria: novaCategoria.value || undefined,
+  })
+  criando.value = false
+  if (criado) {
+    adicionandoAberto.value = false
+    mostrarToast(`Gasto adicionado (${criado.categoria}) ✓`)
+    await gastosStore.buscarGastos(filtroMes.value, filtroAno.value)
+    await buscarTotalMesAnterior()
+  }
+}
+
 // --- Toast de confirmação de ação ---
 const toast = ref<string | null>(null)
 let toastTimer: ReturnType<typeof setTimeout> | null = null
@@ -218,6 +258,41 @@ onMounted(() => {
           class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-900/5 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60">
           ›
         </button>
+      </div>
+
+      <!-- Adicionar gasto pelo portal -->
+      <div v-if="!adicionandoAberto" class="mb-6">
+        <button id="btn-novo-gasto" @click="abrirNovoGasto"
+          class="w-full py-3.5 rounded-2xl font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60">
+          + Novo gasto
+        </button>
+      </div>
+
+      <div v-else class="mb-6 bg-white/80 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-lg shadow-slate-900/5 dark:shadow-none">
+        <p class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">💸 Novo gasto</p>
+        <div class="space-y-3">
+          <input v-model="novaDescricao" type="text" placeholder="Descrição (ex: mercado, uber, netflix)" autofocus
+            class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400" />
+          <div class="flex gap-3">
+            <select v-model="novaCategoria"
+              class="select-chevron flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400 appearance-none">
+              <option value="" class="bg-white dark:bg-slate-800">🤖 Categorizar automaticamente</option>
+              <option v-for="cat in CATEGORIAS" :key="cat" :value="cat" class="bg-white dark:bg-slate-800">{{ iconeDaCategoria(cat) }} {{ cat }}</option>
+            </select>
+            <input v-model="novoValor" type="text" inputmode="decimal" placeholder="Valor"
+              class="w-28 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400" />
+          </div>
+          <div class="flex justify-end gap-2">
+            <button @click="cancelarNovoGasto" :disabled="criando"
+              class="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 rounded-lg">
+              Cancelar
+            </button>
+            <button @click="confirmarNovoGasto" :disabled="!novoGastoValido || criando"
+              class="px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60">
+              {{ criando ? 'Adicionando...' : 'Adicionar' }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Estado de Carregamento: skeleton no formato dos cards reais -->
@@ -354,7 +429,7 @@ onMounted(() => {
             <span class="text-3xl">📭</span>
           </div>
           <p class="text-slate-500 dark:text-slate-400 text-lg font-semibold">Nenhum gasto registrado.</p>
-          <p class="text-slate-400 dark:text-slate-600 text-sm mt-2">Mande uma mensagem pelo WhatsApp para começar!</p>
+          <p class="text-slate-400 dark:text-slate-600 text-sm mt-2">Mande uma mensagem pelo WhatsApp ou toque em "+ Novo gasto" para começar!</p>
         </div>
       </div>
 

@@ -23,10 +23,24 @@ export interface DadosEdicaoGasto {
   valor?: number
 }
 
+export interface DadosNovoGasto {
+  descricao: string
+  valor: number
+  categoria?: string
+}
+
 export function buscarGastos(telefone: string, mes?: number, ano?: number) {
   let url = `${BASE_URL}/api/gastos/${telefone}`
   if (mes && ano) url += `?mes=${mes}&ano=${ano}`
   return fetch(url).then(tratarResposta)
+}
+
+export function criarGasto(telefone: string, dados: DadosNovoGasto) {
+  return fetch(`${BASE_URL}/api/gastos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone, ...dados }),
+  }).then(tratarResposta)
 }
 
 export function excluirGasto(id: number | string, telefone: string) {
