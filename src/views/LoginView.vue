@@ -3,6 +3,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGastosStore } from '../stores/gastos'
 import * as api from '../services/api'
+import OtpInput from '../components/OtpInput.vue'
 
 const router = useRouter()
 const gastosStore = useGastosStore()
@@ -15,6 +16,7 @@ const etapa = ref<'telefone' | 'pin'>('telefone')
 const pin = ref('')
 const enviando = ref(false)
 const segundosParaReenviar = ref(0)
+const otpRef = ref<InstanceType<typeof OtpInput> | null>(null)
 let timerReenvio: ReturnType<typeof setInterval> | null = null
 
 const iniciarContagemReenvio = () => {
@@ -151,6 +153,7 @@ const enviarCodigo = async () => {
     etapa.value = 'pin'
     pin.value = ''
     iniciarContagemReenvio()
+    otpRef.value?.focar()
   } catch (e) {
     erro.value = e instanceof Error ? e.message : 'Não foi possível enviar o código.'
   } finally {
@@ -191,15 +194,10 @@ const voltarParaTelefone = () => {
 const aoTeclar = (event: KeyboardEvent) => {
   if (event.key === 'Enter') enviarCodigo()
 }
-
-const aoTeclarPin = (event: KeyboardEvent) => {
-  if (event.key === 'Enter') confirmarCodigo()
-}
 </script>
 
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+  <div class="min-h-screen flex items-center justify-center p-4">
 
     <!-- Card de Login -->
     <div class="w-full max-w-md">
@@ -210,34 +208,35 @@ const aoTeclarPin = (event: KeyboardEvent) => {
           class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-500/30 mb-4">
           <span class="text-4xl">💸</span>
         </div>
-        <h1 class="text-3xl font-extrabold text-white tracking-tight">
+        <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
           Gestor Financeiro
         </h1>
-        <p class="text-slate-400 mt-2 text-sm">
+        <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">
           Controle seus gastos pelo WhatsApp
         </p>
       </div>
 
       <!-- Card: etapa 1, telefone -->
-      <div v-if="etapa === 'telefone'" class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+      <div v-if="etapa === 'telefone'"
+        class="bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-8 shadow-xl shadow-slate-900/5 dark:shadow-2xl">
 
-        <label class="block text-sm font-semibold text-slate-300 mb-3">
+        <label class="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">
           📱 Número do WhatsApp
         </label>
 
         <!-- Input Container -->
         <div :class="[
-          'relative flex items-center rounded-2xl border-2 transition-all duration-300 bg-white/5',
-          focado ? 'border-emerald-400 shadow-lg shadow-emerald-500/20' : 'border-white/10',
-          erro ? 'border-red-400/60' : ''
+          'relative flex items-center rounded-2xl border-2 transition-all duration-300 bg-slate-50 dark:bg-white/5',
+          focado ? 'border-emerald-400 shadow-lg shadow-emerald-500/20' : 'border-slate-200 dark:border-white/10',
+          erro ? '!border-red-400/60' : ''
         ]">
 
           <!-- Seletor de País -->
           <div ref="dropdownRef" class="relative flex-shrink-0">
             <button id="btn-pais-selector" type="button" @click.stop="dropdownAberto = !dropdownAberto"
-              class="flex items-center gap-1.5 pl-3 pr-2 py-4 rounded-l-2xl hover:bg-white/5 transition-colors duration-200 cursor-pointer group">
+              class="flex items-center gap-1.5 pl-3 pr-2 py-4 rounded-l-2xl hover:bg-slate-900/5 dark:hover:bg-white/5 transition-colors duration-200 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-inset">
               <span class="text-2xl leading-none">{{ paisSelecionado.bandeira }}</span>
-              <span class="text-emerald-400 font-bold text-base select-none">+{{ paisSelecionado.codigo }}</span>
+              <span class="text-emerald-600 dark:text-emerald-400 font-bold text-base select-none">+{{ paisSelecionado.codigo }}</span>
               <svg
                 :class="['w-3.5 h-3.5 text-slate-400 transition-transform duration-200', dropdownAberto ? 'rotate-180' : '']"
                 fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -251,12 +250,12 @@ const aoTeclarPin = (event: KeyboardEvent) => {
               leave-active-class="transition duration-150 ease-in"
               leave-from-class="opacity-100 translate-y-0 scale-100" leave-to-class="opacity-0 -translate-y-2 scale-95">
               <div v-if="dropdownAberto"
-                class="absolute top-full left-0 mt-2 w-64 max-h-72 overflow-y-auto bg-slate-800/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 z-50 py-2 scrollbar-thin">
+                class="absolute top-full left-0 mt-2 w-64 max-h-72 overflow-y-auto bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl shadow-slate-900/10 dark:shadow-black/40 z-50 py-2 scrollbar-thin">
                 <button v-for="pais in paises" :key="pais.codigo" type="button" @click="selecionarPais(pais)" :class="[
                   'w-full flex items-center gap-3 px-4 py-3 text-left transition-colors duration-150 cursor-pointer',
                   pais.codigo === paisSelecionado.codigo
-                    ? 'bg-emerald-500/15 text-emerald-300'
-                    : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-900/5 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                 ]">
                   <span class="text-2xl leading-none">{{ pais.bandeira }}</span>
                   <span class="flex-1 text-sm font-medium">{{ pais.nome }}</span>
@@ -267,22 +266,22 @@ const aoTeclarPin = (event: KeyboardEvent) => {
           </div>
 
           <!-- Divisor vertical -->
-          <div class="w-px h-7 bg-white/10 flex-shrink-0"></div>
+          <div class="w-px h-7 bg-slate-200 dark:bg-white/10 flex-shrink-0"></div>
 
           <input id="telefone-input" type="text" inputmode="numeric" :value="telefoneFormatado()" @input="aoDigitar"
             @keydown="aoTeclar" @focus="focado = true" @blur="focado = false" :placeholder="placeholderPais()"
-            class="w-full py-4 pr-4 pl-3 bg-transparent text-white text-xl font-mono tracking-wider placeholder-slate-500/50 focus:outline-none"
+            class="w-full py-4 pr-4 pl-3 bg-transparent text-slate-900 dark:text-white text-xl font-mono tracking-wider placeholder-slate-400 dark:placeholder-slate-500/50 focus:outline-none"
             autocomplete="off" />
         </div>
 
         <!-- Dica de formato -->
-        <p class="text-xs text-slate-500 mt-2 ml-1">
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-2 ml-1">
           {{ paisSelecionado.bandeira }} {{ paisSelecionado.nome }} (+{{ paisSelecionado.codigo }}) · DDD + número
         </p>
 
         <!-- Mensagem de erro -->
-        <div v-if="erro" class="mt-3 flex items-center gap-2 text-red-400 text-sm font-medium animate-pulse">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <div v-if="erro" class="mt-3 flex items-center gap-2 text-red-500 dark:text-red-400 text-sm font-medium animate-pulse">
+          <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd"
               d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
               clip-rule="evenodd" />
@@ -292,37 +291,33 @@ const aoTeclarPin = (event: KeyboardEvent) => {
 
         <!-- Botão -->
         <button id="btn-entrar" @click="enviarCodigo" :disabled="telefone.length < minimoDigitosLocal() || enviando" :class="[
-          'w-full mt-6 py-4 rounded-2xl font-bold text-lg tracking-wide transition-all duration-300',
+          'w-full mt-6 py-4 rounded-2xl font-bold text-base sm:text-lg tracking-wide transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
           telefone.length >= minimoDigitosLocal() && !enviando
             ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98]'
-            : 'bg-white/5 text-slate-500 cursor-not-allowed'
+            : 'bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-500 cursor-not-allowed'
         ]">
-          {{ enviando ? 'Enviando código...' : 'Enviar código pelo WhatsApp →' }}
+          {{ enviando ? 'Enviando...' : 'Enviar código →' }}
         </button>
 
       </div>
 
       <!-- Card: etapa 2, confirmação do PIN -->
-      <div v-else class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+      <div v-else
+        class="bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-8 shadow-xl shadow-slate-900/5 dark:shadow-2xl">
 
-        <label class="block text-sm font-semibold text-slate-300 mb-3">
+        <label class="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">
           🔐 Código de verificação
         </label>
-        <p class="text-xs text-slate-500 mb-4">
+        <p class="text-xs text-slate-400 dark:text-slate-500 mb-4">
           Enviamos um código de 6 dígitos pelo WhatsApp para
           {{ paisSelecionado.bandeira }} +{{ numeroCompleto() }}.
         </p>
 
-        <input id="pin-input" type="text" inputmode="numeric" maxlength="6" v-model="pin" @keydown="aoTeclarPin"
-          placeholder="000000" autocomplete="off"
-          :class="[
-            'w-full py-4 px-4 rounded-2xl border-2 bg-white/5 text-white text-2xl font-mono tracking-[0.5em] text-center placeholder-slate-500/50 focus:outline-none transition-all duration-300',
-            erro ? 'border-red-400/60' : 'border-white/10 focus:border-emerald-400 focus:shadow-lg focus:shadow-emerald-500/20'
-          ]" />
+        <OtpInput ref="otpRef" v-model="pin" :erro="!!erro" @completo="confirmarCodigo" />
 
         <!-- Mensagem de erro -->
-        <div v-if="erro" class="mt-3 flex items-center gap-2 text-red-400 text-sm font-medium animate-pulse">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <div v-if="erro" class="mt-3 flex items-center justify-center gap-2 text-red-500 dark:text-red-400 text-sm font-medium animate-pulse">
+          <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd"
               d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
               clip-rule="evenodd" />
@@ -332,10 +327,10 @@ const aoTeclarPin = (event: KeyboardEvent) => {
 
         <!-- Botão confirmar -->
         <button id="btn-confirmar-pin" @click="confirmarCodigo" :disabled="pin.trim().length !== 6 || enviando" :class="[
-          'w-full mt-6 py-4 rounded-2xl font-bold text-lg tracking-wide transition-all duration-300',
+          'w-full mt-6 py-4 rounded-2xl font-bold text-lg tracking-wide transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
           pin.trim().length === 6 && !enviando
             ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98]'
-            : 'bg-white/5 text-slate-500 cursor-not-allowed'
+            : 'bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-500 cursor-not-allowed'
         ]">
           {{ enviando ? 'Confirmando...' : 'Confirmar →' }}
         </button>
@@ -343,13 +338,13 @@ const aoTeclarPin = (event: KeyboardEvent) => {
         <!-- Reenviar / voltar -->
         <div class="flex justify-between items-center mt-4">
           <button id="btn-voltar" type="button" @click="voltarParaTelefone"
-            class="text-sm text-slate-400 hover:text-white transition-colors duration-200">
+            class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 rounded">
             ← Trocar número
           </button>
           <button id="btn-reenviar" type="button" @click="enviarCodigo" :disabled="segundosParaReenviar > 0 || enviando"
             :class="[
-              'text-sm font-semibold transition-colors duration-200',
-              segundosParaReenviar > 0 || enviando ? 'text-slate-600 cursor-not-allowed' : 'text-emerald-400 hover:text-emerald-300'
+              'text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 rounded',
+              segundosParaReenviar > 0 || enviando ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed' : 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 dark:hover:text-emerald-300'
             ]">
             {{ segundosParaReenviar > 0 ? `Reenviar em ${segundosParaReenviar}s` : 'Reenviar código' }}
           </button>
@@ -358,7 +353,7 @@ const aoTeclarPin = (event: KeyboardEvent) => {
       </div>
 
       <!-- Rodapé -->
-      <p class="text-center text-slate-600 text-xs mt-6">
+      <p class="text-center text-slate-400 dark:text-slate-500 text-xs mt-6">
         Envie gastos pelo WhatsApp e acompanhe aqui 🚀
       </p>
 

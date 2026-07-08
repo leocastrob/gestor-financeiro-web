@@ -2,6 +2,7 @@ import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import * as api from '../services/api'
 import type { DadosEdicaoGasto } from '../services/api'
+import { formatarMoeda } from '../utils/formatarMoeda'
 
 export interface Transacao {
   id: number | string
@@ -12,7 +13,7 @@ export interface Transacao {
   data: string | Date
 }
 
-export const CATEGORIAS = ['Alimentação', 'Transporte', 'Lazer', 'Saúde', 'Moradia', 'Pets', 'Outros']
+export { CATEGORIAS } from '../theme/categorias'
 
 export const useGastosStore = defineStore('gastos', () => {
   // Inicializa o telefone buscando do localStorage se existir
@@ -34,11 +35,9 @@ export const useGastosStore = defineStore('gastos', () => {
   // Erro de uma ação pontual (excluir/editar) — exibido como banner dispensável, não bloqueia a tela
   const erroAcao = ref<string | null>(null)
 
-  // Computed: Total de gastos formatado
-  const totalGastos = computed(() => {
-    const total = transacoes.value.reduce((acc, t) => acc + Number(t.valor), 0)
-    return total.toFixed(2).replace('.', ',')
-  })
+  // Computed: total de gastos, valor bruto (para cálculos) e formatado (para exibição)
+  const totalGastosNumerico = computed(() => transacoes.value.reduce((acc, t) => acc + Number(t.valor), 0))
+  const totalGastos = computed(() => formatarMoeda(totalGastosNumerico.value))
 
   // Define o telefone do usuário logado
   const setTelefone = (num: string) => {
@@ -102,6 +101,7 @@ export const useGastosStore = defineStore('gastos', () => {
     erroAcao,
     telefone,
     totalGastos,
+    totalGastosNumerico,
     setTelefone,
     buscarGastos,
     excluirGasto,
