@@ -273,14 +273,14 @@ onMounted(() => {
         <div class="space-y-3">
           <input v-model="novaDescricao" type="text" placeholder="Descrição (ex: mercado, uber, netflix)" autofocus
             class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400" />
-          <div class="flex gap-3">
+          <div class="flex gap-2 sm:gap-3">
             <select v-model="novaCategoria"
-              class="select-chevron flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400 appearance-none">
-              <option value="" class="bg-white dark:bg-slate-800">🤖 Categorizar automaticamente</option>
+              class="select-chevron min-w-0 flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400 appearance-none">
+              <option value="" class="bg-white dark:bg-slate-800">🤖 Automática</option>
               <option v-for="cat in CATEGORIAS" :key="cat" :value="cat" class="bg-white dark:bg-slate-800">{{ iconeDaCategoria(cat) }} {{ cat }}</option>
             </select>
             <input v-model="novoValor" type="text" inputmode="decimal" placeholder="Valor"
-              class="w-28 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400" />
+              class="w-24 sm:w-28 flex-shrink-0 min-w-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400" />
           </div>
           <div class="flex justify-end gap-2">
             <button @click="cancelarNovoGasto" :disabled="criando"
@@ -358,13 +358,13 @@ onMounted(() => {
           <div v-if="editandoId === gasto.id" class="space-y-3">
             <input v-model="formDescricao" type="text" placeholder="Descrição"
               class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400" />
-            <div class="flex gap-3">
+            <div class="flex gap-2 sm:gap-3">
               <select v-model="formCategoria"
-                class="select-chevron flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400 appearance-none">
+                class="select-chevron min-w-0 flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400 appearance-none">
                 <option v-for="cat in CATEGORIAS" :key="cat" :value="cat" class="bg-white dark:bg-slate-800">{{ iconeDaCategoria(cat) }} {{ cat }}</option>
               </select>
               <input v-model="formValor" type="text" inputmode="decimal" placeholder="Valor"
-                class="w-28 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400" />
+                class="w-24 sm:w-28 flex-shrink-0 min-w-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400" />
             </div>
             <div class="flex justify-end gap-2">
               <button @click="cancelarEdicao" :disabled="salvando"
