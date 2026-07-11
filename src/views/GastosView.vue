@@ -6,10 +6,7 @@ import { corDaCategoria, iconeDaCategoria } from '../theme/categorias'
 import { formatarMoeda } from '../utils/formatarMoeda'
 import { useTema } from '../composables/useTema'
 import * as api from '../services/api'
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
-import { Doughnut } from 'vue-chartjs'
-
-ChartJS.register(ArcElement, Tooltip, Legend)
+import GraficoCategorias from '../components/GraficoCategorias.vue'
 
 const router = useRouter()
 const gastosStore = useGastosStore()
@@ -42,48 +39,6 @@ const variacaoPercentual = computed(() => {
   if (totalMesAnterior.value === null || totalMesAnterior.value === 0) return null
   return ((gastosStore.totalGastosNumerico - totalMesAnterior.value) / totalMesAnterior.value) * 100
 })
-
-// --- Gráfico de categorias (cores fixas por nome, nunca por posição) ---
-const dadosGrafico = computed(() => {
-  const contagem: Record<string, number> = {}
-
-  gastosStore.transacoes.forEach((g) => {
-    const cat = g.categoria || 'Outros'
-    const valor = Number(g.valor)
-    if (!contagem[cat]) contagem[cat] = 0
-    contagem[cat] += valor
-  })
-
-  const categorias = Object.keys(contagem)
-  const corGap = tema.value === 'dark' ? '#1e293b' : '#ffffff'
-
-  return {
-    labels: categorias,
-    datasets: [
-      {
-        backgroundColor: categorias.map(corDaCategoria),
-        data: Object.values(contagem),
-        borderColor: corGap,
-        borderWidth: 2,
-        hoverOffset: 6,
-      },
-    ],
-  }
-})
-
-const opcoesGrafico = computed(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'right' as const,
-      labels: {
-        color: tema.value === 'dark' ? '#cbd5e1' : '#475569',
-        padding: 14,
-      },
-    },
-  },
-}))
 
 // --- Edição inline de um gasto ---
 const editandoId = ref<number | string | null>(null)
@@ -321,10 +276,7 @@ onMounted(() => {
         </div>
 
         <!-- Gráfico de Categorias -->
-        <div v-if="gastosStore.transacoes.length > 0"
-          class="bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-5 mb-4 h-64">
-          <Doughnut :data="dadosGrafico" :options="opcoesGrafico" />
-        </div>
+        <GraficoCategorias v-if="gastosStore.transacoes.length > 0" :transacoes="gastosStore.transacoes" />
 
         <!-- Itens -->
         <div v-for="gasto in gastosStore.transacoes" :key="gasto.id"
