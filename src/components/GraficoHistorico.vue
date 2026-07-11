@@ -4,38 +4,17 @@ import * as api from '../services/api'
 import { useTema } from '../composables/useTema'
 import { Chart as ChartJS, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import type { Transacao } from '../stores/gastos'
+import { agregarUltimosMeses } from '../utils/agregarUltimosMeses'
 
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Filler)
 
 const props = defineProps<{ telefone: string }>()
 const { tema } = useTema()
 
-const MESES_ABREV = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 const QUANTIDADE_MESES = 6
 
 const carregando = ref(false)
 const totaisPorMes = ref<{ rotulo: string; total: number }[]>([])
-
-function agregarUltimosMeses(transacoes: Transacao[], quantidade: number) {
-  const hoje = new Date()
-  const buckets: { chave: string; rotulo: string; total: number }[] = []
-
-  for (let i = quantidade - 1; i >= 0; i--) {
-    const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1)
-    buckets.push({ chave: `${data.getFullYear()}-${data.getMonth()}`, rotulo: MESES_ABREV[data.getMonth()]!, total: 0 })
-  }
-
-  const porChave = new Map(buckets.map((b) => [b.chave, b]))
-
-  transacoes.forEach((t) => {
-    const data = new Date(t.data)
-    const bucket = porChave.get(`${data.getFullYear()}-${data.getMonth()}`)
-    if (bucket) bucket.total += Number(t.valor)
-  })
-
-  return buckets
-}
 
 const carregar = async () => {
   if (!props.telefone) return
