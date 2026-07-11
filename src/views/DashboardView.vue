@@ -1,15 +1,35 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useGastosStore } from '../stores/gastos'
+import { useMetasStore } from '../stores/metas'
 import { formatarMoeda } from '../utils/formatarMoeda'
 import { MESES } from '../constants/meses'
 import AppShell from '../layouts/AppShell.vue'
 import GraficoCategorias from '../components/GraficoCategorias.vue'
 import GraficoHistorico from '../components/GraficoHistorico.vue'
+import MetaProgressBar from '../components/MetaProgressBar.vue'
 import * as api from '../services/api'
 import type { Transacao } from '../stores/gastos'
 
 const gastosStore = useGastosStore()
+const metasStore = useMetasStore()
+
+const totalPorCategoria = computed(() => {
+  const contagem: Record<string, number> = {}
+  gastosStore.transacoesVisiveis.forEach((g) => {
+    const cat = g.categoria || 'Outros'
+    contagem[cat] = (contagem[cat] || 0) + Number(g.valor)
+  })
+  return contagem
+})
+
+const salvarMeta = (categoria: string, valorTeto: number) => {
+  metasStore.salvarMeta(gastosStore.telefone, categoria, valorTeto)
+}
+
+const removerMeta = (categoria: string) => {
+  metasStore.removerMeta(gastosStore.telefone, categoria)
+}
 
 const totalMesAnterior = ref<number | null>(null)
 
@@ -42,6 +62,7 @@ watch([() => gastosStore.filtroMes, () => gastosStore.filtroAno], buscarTotalMes
 // adiciona uma segunda chamada aqui dentro.
 onMounted(() => {
   buscarTotalMesAnterior()
+  metasStore.buscarMetas(gastosStore.telefone)
 })
 </script>
 
@@ -82,6 +103,18 @@ onMounted(() => {
       <GraficoCategorias v-if="gastosStore.transacoesVisiveis.length > 0" :transacoes="gastosStore.transacoesVisiveis" />
 
       <GraficoHistorico :telefone="gastosStore.telefone" />
+
+      <div class="space-y-2">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Metas por categoria</p>
+        <MetaProgressBar
+          v-for="cat in Object.keys(totalPorCategoria)" :key="cat"
+          :categoria="cat"
+          :gasto-atual="totalPorCategoria[cat]!"
+          :valor-teto="metasStore.metaDaCategoria(cat)?.valor_teto ? Number(metasStore.metaDaCategoria(cat)!.valor_teto) : undefined"
+          @salvar="salvarMeta"
+          @remover="removerMeta"
+        />
+      </div>
 
       <div v-if="gastosStore.transacoesVisiveis.length === 0" class="min-h-[30vh] flex flex-col items-center justify-center text-center">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-900/5 dark:bg-white/5 mb-4">

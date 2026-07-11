@@ -74,3 +74,26 @@ export function confirmarPin(telefone: string, pin: string) {
     body: JSON.stringify({ telefone, pin }),
   }).then(tratarResposta)
 }
+
+export interface DadosMeta {
+  categoria: string
+  valor_teto: number
+}
+
+export function buscarMetas(telefone: string) {
+  return fetch(`${BASE_URL}/api/metas/${telefone}`).then(tratarResposta)
+}
+
+export function salvarMeta(telefone: string, dados: DadosMeta) {
+  return fetch(`${BASE_URL}/api/metas`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone, ...dados }),
+  }).then(tratarResposta)
+}
+
+export function removerMeta(telefone: string, categoria: string) {
+  return fetch(`${BASE_URL}/api/metas/${telefone}/${encodeURIComponent(categoria)}`, {
+    method: 'DELETE',
+  }).then(tratarResposta)
+}
