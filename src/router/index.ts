@@ -10,9 +10,14 @@ const router = createRouter({
       component: () => import('../views/LoginView.vue'),
     },
     {
-      path: '/gastos',
-      name: 'gastos',
-      component: () => import('../views/GastosView.vue'),
+      path: '/painel',
+      name: 'painel',
+      component: () => import('../views/DashboardView.vue'),
+    },
+    {
+      path: '/lancamentos',
+      name: 'lancamentos',
+      component: () => import('../views/LancamentosView.vue'),
     },
     {
       path: '/:pathMatch(.*)*',
@@ -22,9 +27,11 @@ const router = createRouter({
   ],
 })
 
+const ROTAS_AUTENTICADAS = ['painel', 'lancamentos']
+
 // Guard: se não tem telefone na store, volta pro login
 router.beforeEach((to) => {
-  if (to.name === 'gastos') {
+  if (typeof to.name === 'string' && ROTAS_AUTENTICADAS.includes(to.name)) {
     const store = useGastosStore()
     if (!store.telefone) {
       return { name: 'login' }

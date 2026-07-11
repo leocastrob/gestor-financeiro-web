@@ -74,7 +74,7 @@ const fecharDropdown = (e: MouseEvent) => {
 
 onMounted(() => {
   if (gastosStore.telefone) {
-    router.push('/gastos')
+    router.push('/painel')
   }
   document.addEventListener('click', fecharDropdown)
 })
@@ -172,7 +172,7 @@ const confirmarCodigo = async () => {
   try {
     await api.confirmarPin(numeroCompleto(), pin.value.trim())
     gastosStore.setTelefone(numeroCompleto())
-    router.push('/gastos')
+    router.push('/painel')
   } catch (e) {
     erro.value = e instanceof Error ? e.message : 'Código inválido.'
   } finally {
