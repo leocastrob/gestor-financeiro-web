@@ -58,7 +58,7 @@ onMounted(() => {
     </div>
 
     <div v-else class="space-y-4">
-      <div v-if="gastosStore.transacoes.length > 0"
+      <div v-if="gastosStore.transacoesVisiveis.length > 0"
         v-motion :initial="{ opacity: 0, y: 12 }" :enter="{ opacity: 1, y: 0, transition: { duration: 300 } }"
         class="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20 rounded-2xl p-5 flex justify-between items-center">
         <div>
@@ -74,13 +74,13 @@ onMounted(() => {
         </div>
         <div class="text-right">
           <p class="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider">Registros</p>
-          <p class="text-2xl font-black text-slate-700 dark:text-slate-300 mt-1 font-mono">{{ gastosStore.transacoes.length }}</p>
+          <p class="text-2xl font-black text-slate-700 dark:text-slate-300 mt-1 font-mono">{{ gastosStore.transacoesVisiveis.length }}</p>
         </div>
       </div>
 
-      <GraficoCategorias v-if="gastosStore.transacoes.length > 0" :transacoes="gastosStore.transacoes" />
+      <GraficoCategorias v-if="gastosStore.transacoesVisiveis.length > 0" :transacoes="gastosStore.transacoesVisiveis" />
 
-      <div v-if="gastosStore.transacoes.length === 0" class="min-h-[30vh] flex flex-col items-center justify-center text-center">
+      <div v-if="gastosStore.transacoesVisiveis.length === 0" class="min-h-[30vh] flex flex-col items-center justify-center text-center">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-900/5 dark:bg-white/5 mb-4">
           <span class="text-3xl">📭</span>
         </div>

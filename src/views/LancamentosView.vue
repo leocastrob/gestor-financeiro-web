@@ -77,21 +77,31 @@ const salvarEdicao = async (id: number | string, dados: DadosEdicaoGasto) => {
 }
 
 // --- Excluir ---
-const excluir = async (id: number | string) => {
-  await gastosStore.excluirGasto(id)
-  if (!gastosStore.erroAcao) mostrarToast('Gasto excluído ✓')
+const excluir = (id: number | string) => {
+  gastosStore.marcarParaExcluir(id)
+  mostrarToast('Gasto excluído', () => gastosStore.desfazerExclusao(id))
 }
 
 // --- Toast de confirmação ---
 const toast = ref<string | null>(null)
+const acaoToast = ref<(() => void) | null>(null)
 let toastTimer: ReturnType<typeof setTimeout> | null = null
 
-const mostrarToast = (mensagem: string) => {
+const mostrarToast = (mensagem: string, acao?: () => void) => {
   toast.value = mensagem
+  acaoToast.value = acao ?? null
   if (toastTimer) clearTimeout(toastTimer)
   toastTimer = setTimeout(() => {
     toast.value = null
-  }, 2200)
+    acaoToast.value = null
+  }, acao ? 5000 : 2200)
+}
+
+const executarAcaoToast = () => {
+  acaoToast.value?.()
+  toast.value = null
+  acaoToast.value = null
+  if (toastTimer) clearTimeout(toastTimer)
 }
 </script>
 
@@ -152,7 +162,7 @@ const mostrarToast = (mensagem: string) => {
         </div>
 
         <GastoItem
-          v-for="gasto in gastosStore.transacoes" :key="gasto.id"
+          v-for="gasto in gastosStore.transacoesVisiveis" :key="gasto.id"
           :gasto="gasto"
           :editando="editandoId === gasto.id"
           :salvando="salvando"
@@ -162,7 +172,7 @@ const mostrarToast = (mensagem: string) => {
           @excluir="excluir"
         />
 
-        <div v-if="gastosStore.transacoes.length === 0" class="min-h-[40vh] flex flex-col items-center justify-center text-center">
+        <div v-if="gastosStore.transacoesVisiveis.length === 0" class="min-h-[40vh] flex flex-col items-center justify-center text-center">
           <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-900/5 dark:bg-white/5 mb-4">
             <span class="text-3xl">📭</span>
           </div>
@@ -177,7 +187,10 @@ const mostrarToast = (mensagem: string) => {
       leave-from-class="opacity-100" leave-to-class="opacity-0">
       <div v-if="toast"
         class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-sm font-semibold px-5 py-3 rounded-2xl shadow-2xl z-50">
-        {{ toast }}
+        <span>{{ toast }}</span>
+        <button v-if="acaoToast" @click="executarAcaoToast" class="ml-3 font-bold text-emerald-400 dark:text-emerald-600 underline underline-offset-2">
+          Desfazer
+        </button>
       </div>
     </Transition>
   </AppShell>

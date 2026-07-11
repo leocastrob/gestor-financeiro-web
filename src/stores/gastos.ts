@@ -64,7 +64,7 @@ export const useGastosStore = defineStore('gastos', () => {
   const erroAcao = ref<string | null>(null)
 
   // Computed: total de gastos, valor bruto (para cálculos) e formatado (para exibição)
-  const totalGastosNumerico = computed(() => transacoes.value.reduce((acc, t) => acc + Number(t.valor), 0))
+  const totalGastosNumerico = computed(() => transacoesVisiveis.value.reduce((acc, t) => acc + Number(t.valor), 0))
   const totalGastos = computed(() => formatarMoeda(totalGastosNumerico.value))
 
   // Define o telefone do usuário logado
@@ -102,17 +102,43 @@ export const useGastosStore = defineStore('gastos', () => {
     }
   }
 
-  // Ação: Exclui um gasto específico
-  const excluirGasto = async (id: number | string) => {
+  // Exclusão com desfazer: o item some da lista visível na hora, mas só é
+  // excluído de verdade na API depois de um tempo de graça sem "Desfazer".
+  const idsExcluindo = ref<(number | string)[]>([])
+  const timersExclusao = new Map<number | string, ReturnType<typeof setTimeout>>()
+  const TEMPO_DE_GRACA_MS = 5000
+
+  const transacoesVisiveis = computed(() =>
+    transacoes.value.filter((t) => !idsExcluindo.value.includes(t.id)),
+  )
+
+  const excluirDeVerdade = async (id: number | string) => {
+    timersExclusao.delete(id)
     erroAcao.value = null
     try {
       await api.excluirGasto(id, telefone.value)
-      // Remove localmente sem precisar buscar do servidor novamente
       transacoes.value = transacoes.value.filter((t) => t.id !== id)
+      idsExcluindo.value = idsExcluindo.value.filter((i) => i !== id)
     } catch (e) {
       console.error(e)
+      idsExcluindo.value = idsExcluindo.value.filter((i) => i !== id)
       erroAcao.value = 'Erro ao excluir o gasto. Tente novamente.'
     }
+  }
+
+  const marcarParaExcluir = (id: number | string) => {
+    idsExcluindo.value = [...idsExcluindo.value, id]
+    const timer = setTimeout(() => excluirDeVerdade(id), TEMPO_DE_GRACA_MS)
+    timersExclusao.set(id, timer)
+  }
+
+  const desfazerExclusao = (id: number | string) => {
+    const timer = timersExclusao.get(id)
+    if (timer) {
+      clearTimeout(timer)
+      timersExclusao.delete(id)
+    }
+    idsExcluindo.value = idsExcluindo.value.filter((i) => i !== id)
   }
 
   // Ação: Edita descrição/categoria/valor de um gasto
@@ -150,7 +176,9 @@ export const useGastosStore = defineStore('gastos', () => {
     setTelefone,
     buscarGastos,
     criarGasto,
-    excluirGasto,
+    transacoesVisiveis,
+    marcarParaExcluir,
+    desfazerExclusao,
     editarGasto,
     logout,
   }
