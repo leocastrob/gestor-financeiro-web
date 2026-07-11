@@ -36,3 +36,6 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Worktree isolado para execução de planos (superpowers:using-git-worktrees)
+.worktrees
