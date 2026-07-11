@@ -3,7 +3,7 @@ import ThemeToggle from './components/ThemeToggle.vue'
 </script>
 
 <template>
-  <div class="min-h-screen relative bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+  <div class="min-h-screen relative bg-slate-50 dark:bg-ink-950 transition-colors duration-300">
     <!-- Fundo decorativo: blobs suaves, não interativos, atrás de todo o conteúdo -->
     <div class="pointer-events-none fixed inset-0 overflow-hidden">
       <div
