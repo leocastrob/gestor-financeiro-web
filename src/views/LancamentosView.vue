@@ -6,6 +6,7 @@ import type { DadosEdicaoGasto } from '../services/api'
 import AppShell from '../layouts/AppShell.vue'
 import GastoItem from '../components/GastoItem.vue'
 import CategoriaSelect from '../components/CategoriaSelect.vue'
+import ExportarMenu from '../components/ExportarMenu.vue'
 
 const gastosStore = useGastosStore()
 
@@ -109,12 +110,13 @@ const executarAcaoToast = () => {
   <AppShell>
     <div class="space-y-3">
 
-      <!-- Adicionar gasto pelo portal -->
-      <div v-if="!adicionandoAberto" class="mb-2">
+      <!-- Adicionar gasto pelo portal + exportar -->
+      <div v-if="!adicionandoAberto" class="flex gap-2 mb-2">
         <button id="btn-novo-gasto" @click="abrirNovoGasto"
-          class="w-full py-3.5 rounded-2xl font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60">
+          class="flex-1 py-3.5 rounded-2xl font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60">
           + Novo gasto
         </button>
+        <ExportarMenu :transacoes="gastosStore.transacoesVisiveis" :mes="gastosStore.filtroMes" :ano="gastosStore.filtroAno" />
       </div>
 
       <div v-else class="mb-2 bg-white/80 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-lg shadow-slate-900/5 dark:shadow-none">
