@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useGastosStore, CATEGORIAS, type Transacao } from '../stores/gastos'
+import { useGastosStore, type Transacao } from '../stores/gastos'
 import { corDaCategoria, iconeDaCategoria } from '../theme/categorias'
 import { formatarMoeda } from '../utils/formatarMoeda'
 import * as api from '../services/api'
 import GraficoCategorias from '../components/GraficoCategorias.vue'
+import CategoriaSelect from '../components/CategoriaSelect.vue'
 
 const router = useRouter()
 const gastosStore = useGastosStore()
@@ -203,11 +204,7 @@ onMounted(() => {
           <input v-model="novaDescricao" type="text" placeholder="Descrição (ex: mercado, uber, netflix)" autofocus
             class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400" />
           <div class="flex gap-2 sm:gap-3">
-            <select v-model="novaCategoria"
-              class="select-chevron min-w-0 flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400 appearance-none">
-              <option value="" class="bg-white dark:bg-slate-800">🤖 Automática</option>
-              <option v-for="cat in CATEGORIAS" :key="cat" :value="cat" class="bg-white dark:bg-slate-800">{{ iconeDaCategoria(cat) }} {{ cat }}</option>
-            </select>
+            <CategoriaSelect v-model="novaCategoria" incluir-automatica />
             <input v-model="novoValor" type="text" inputmode="decimal" placeholder="Valor"
               class="w-24 sm:w-28 flex-shrink-0 min-w-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400" />
           </div>
@@ -285,10 +282,7 @@ onMounted(() => {
             <input v-model="formDescricao" type="text" placeholder="Descrição"
               class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400" />
             <div class="flex gap-2 sm:gap-3">
-              <select v-model="formCategoria"
-                class="select-chevron min-w-0 flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400 appearance-none">
-                <option v-for="cat in CATEGORIAS" :key="cat" :value="cat" class="bg-white dark:bg-slate-800">{{ iconeDaCategoria(cat) }} {{ cat }}</option>
-              </select>
+              <CategoriaSelect v-model="formCategoria" />
               <input v-model="formValor" type="text" inputmode="decimal" placeholder="Valor"
                 class="w-24 sm:w-28 flex-shrink-0 min-w-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400" />
             </div>
