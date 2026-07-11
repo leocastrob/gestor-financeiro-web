@@ -4,13 +4,11 @@ import { useRouter } from 'vue-router'
 import { useGastosStore, CATEGORIAS, type Transacao } from '../stores/gastos'
 import { corDaCategoria, iconeDaCategoria } from '../theme/categorias'
 import { formatarMoeda } from '../utils/formatarMoeda'
-import { useTema } from '../composables/useTema'
 import * as api from '../services/api'
 import GraficoCategorias from '../components/GraficoCategorias.vue'
 
 const router = useRouter()
 const gastosStore = useGastosStore()
-const { tema } = useTema()
 
 const meses = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',

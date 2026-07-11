@@ -53,7 +53,7 @@ const opcoesGrafico = computed(() => ({
 </script>
 
 <template>
-  <div class="bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-5 h-64">
+  <div class="bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-5 mb-4 h-64">
     <Doughnut :data="dadosGrafico" :options="opcoesGrafico" />
   </div>
 </template>
