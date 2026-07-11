@@ -458,6 +458,7 @@ Crie `gestor-financeiro-web/src/components/CategoriaSelect.vue`:
 
 ```vue
 <script setup lang="ts">
+import { computed } from 'vue'
 import {
   SelectRoot, SelectTrigger, SelectValue, SelectIcon,
   SelectPortal, SelectContent, SelectViewport,
@@ -465,15 +466,26 @@ import {
 } from 'reka-ui'
 import { CATEGORIAS, iconeDaCategoria } from '../theme/categorias'
 
+// reka-ui 2.10.1 lança erro em runtime se um <SelectItem> tiver value="" —
+// usamos um sentinel interno pra representar "Automática" e traduzimos de/para
+// string vazia só na borda pública do v-model (quem consome este componente
+// nunca vê o sentinel; v-model continua sendo '' para "Automática").
+const AUTOMATICA = '__automatica__'
+
 const modelValue = defineModel<string>({ required: true })
 
 withDefaults(defineProps<{ incluirAutomatica?: boolean }>(), {
   incluirAutomatica: false,
 })
+
+const valorSelect = computed({
+  get: () => (modelValue.value === '' ? AUTOMATICA : modelValue.value),
+  set: (v: string) => { modelValue.value = v === AUTOMATICA ? '' : v },
+})
 </script>
 
 <template>
-  <SelectRoot v-model="modelValue">
+  <SelectRoot v-model="valorSelect">
     <SelectTrigger
       class="min-w-0 flex-1 flex items-center justify-between gap-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400 data-[placeholder]:text-slate-400"
     >
@@ -493,7 +505,7 @@ withDefaults(defineProps<{ incluirAutomatica?: boolean }>(), {
         <SelectViewport class="p-1 max-h-72 overflow-y-auto">
           <SelectItem
             v-if="incluirAutomatica"
-            value=""
+            :value="AUTOMATICA"
             class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-slate-600 dark:text-slate-300 outline-none cursor-pointer data-[highlighted]:bg-slate-900/5 dark:data-[highlighted]:bg-white/5 data-[state=checked]:bg-emerald-500/15 data-[state=checked]:text-emerald-700 dark:data-[state=checked]:text-emerald-300"
           >
             <SelectItemText>🤖 Automática</SelectItemText>
