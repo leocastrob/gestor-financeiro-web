@@ -79,4 +79,17 @@ describe('useMetasStore', () => {
     expect(store.erroAcao).toBe('Erro ao remover a meta. Tente novamente.')
     expect(store.metas).toEqual([{ telefone: '5511999999999', categoria: 'Alimentação', valor_teto: 200 }])
   })
+
+  it('resetar limpa metas, erro e erroAcao', () => {
+    const store = useMetasStore()
+    store.metas = [{ telefone: '5511999999999', categoria: 'Alimentação', valor_teto: 200 }]
+    store.erro = 'Erro ao buscar'
+    store.erroAcao = 'Erro ao salvar'
+
+    store.resetar()
+
+    expect(store.metas).toHaveLength(0)
+    expect(store.erro).toBeNull()
+    expect(store.erroAcao).toBeNull()
+  })
 })
