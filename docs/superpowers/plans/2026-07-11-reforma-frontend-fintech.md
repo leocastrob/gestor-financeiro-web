@@ -397,11 +397,13 @@ const opcoesGrafico = computed(() => ({
 </script>
 
 <template>
-  <div class="bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-5 h-64">
+  <div class="bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-5 mb-4 h-64">
     <Doughnut :data="dadosGrafico" :options="opcoesGrafico" />
   </div>
 </template>
 ```
+
+Note: `mb-4` preserva o espaçamento que o bloco tinha inline em `GastosView.vue` (o card de gráfico precisa de uma folga um pouco maior antes do próximo bloco do que o `space-y-3` do container já dá).
 
 Note: a cor `corGap` mudou de `#1e293b` para `#0a0b0f` para casar com o novo fundo escuro `ink-950` aplicado na Tarefa 2.
 
