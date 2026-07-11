@@ -30,7 +30,7 @@ const selectValue = computed<string>({
 <template>
   <SelectRoot v-model="selectValue">
     <SelectTrigger
-      class="min-w-0 flex-1 flex items-center justify-between gap-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400 data-[placeholder]:text-slate-400"
+      class="min-w-0 flex-1 flex items-center justify-between gap-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 data-[placeholder]:text-slate-400"
     >
       <SelectValue placeholder="🤖 Automática" />
       <SelectIcon as-child>

@@ -65,10 +65,10 @@ const remover = () => {
 
     <div v-if="editando" class="flex items-center gap-2 flex-wrap">
       <input v-model="valorInput" type="text" inputmode="decimal" placeholder="Teto mensal"
-        class="w-28 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-lg px-2 py-1.5 outline-none focus:border-emerald-400" />
-      <button @click="confirmar" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 px-2 py-1.5">Salvar</button>
-      <button @click="cancelar" class="text-xs font-semibold text-slate-400 px-2 py-1.5">Cancelar</button>
-      <button v-if="valorTeto" @click="remover" class="text-xs font-semibold text-red-500/80 px-2 py-1.5">Remover</button>
+        class="w-28 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-lg px-2 py-1.5 outline-none focus:border-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60" />
+      <button @click="confirmar" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 px-2 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 rounded">Salvar</button>
+      <button @click="cancelar" class="text-xs font-semibold text-slate-400 px-2 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 rounded">Cancelar</button>
+      <button v-if="valorTeto" @click="remover" class="text-xs font-semibold text-red-500/80 px-2 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60 rounded">Remover</button>
     </div>
 
     <template v-else-if="valorTeto">
