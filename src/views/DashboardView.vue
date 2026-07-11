@@ -106,6 +106,19 @@ onMounted(() => {
 
       <div class="space-y-2">
         <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Metas por categoria</p>
+
+        <div v-if="metasStore.erro" class="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl">
+          <p class="text-red-500 dark:text-red-400 text-sm font-semibold">{{ metasStore.erro }}</p>
+        </div>
+
+        <div v-if="metasStore.erroAcao" class="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex justify-between items-center gap-3">
+          <p class="text-red-500 dark:text-red-400 text-sm font-semibold">{{ metasStore.erroAcao }}</p>
+          <button @click="metasStore.erroAcao = null"
+            class="text-red-500/70 dark:text-red-400/70 hover:text-red-600 dark:hover:text-red-300 text-lg leading-none">
+            ✕
+          </button>
+        </div>
+
         <MetaProgressBar
           v-for="cat in Object.keys(totalPorCategoria)" :key="cat"
           :categoria="cat"
