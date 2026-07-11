@@ -3,11 +3,13 @@ import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { TabsRoot, TabsList, TabsTrigger } from 'reka-ui'
 import { useGastosStore } from '../stores/gastos'
+import { useMetasStore } from '../stores/metas'
 import { MESES } from '../constants/meses'
 
 const route = useRoute()
 const router = useRouter()
 const gastosStore = useGastosStore()
+const metasStore = useMetasStore()
 
 // AppShell é remontado a cada troca de aba (Dashboard <-> Lançamentos são rotas
 // diferentes, cada uma com sua própria instância de AppShell) — por isso é o
@@ -40,6 +42,7 @@ const telefoneFormatado = computed(() => {
 
 const sair = () => {
   gastosStore.logout()
+  metasStore.resetar()
   router.push('/')
 }
 </script>

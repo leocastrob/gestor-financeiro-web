@@ -61,5 +61,14 @@ export const useMetasStore = defineStore('metas', () => {
 
   const metaDaCategoria = (categoria: string) => metas.value.find((m) => m.categoria === categoria)
 
-  return { metas, carregando, erro, erroAcao, buscarMetas, salvarMeta, removerMeta, metaDaCategoria }
+  // Ação: limpa o estado do usuário anterior (chamada no logout, junto com
+  // gastosStore.logout()) para não deixar metas em memória em dispositivo
+  // compartilhado.
+  const resetar = () => {
+    metas.value = []
+    erro.value = null
+    erroAcao.value = null
+  }
+
+  return { metas, carregando, erro, erroAcao, buscarMetas, salvarMeta, removerMeta, metaDaCategoria, resetar }
 })
