@@ -217,7 +217,11 @@ const aoTeclar = (event: KeyboardEvent) => {
       </div>
 
       <!-- Card: etapa 1, telefone -->
-      <div v-if="etapa === 'telefone'"
+      <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-x-3"
+        enter-to-class="opacity-100 translate-x-0" leave-active-class="transition duration-150 ease-in absolute inset-x-0"
+        leave-from-class="opacity-100 translate-x-0" leave-to-class="opacity-0 -translate-x-3" mode="out-in">
+      <div v-if="etapa === 'telefone'" key="telefone"
+        v-motion :initial="{ opacity: 0, y: 12 }" :enter="{ opacity: 1, y: 0, transition: { duration: 300 } }"
         class="bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-8 shadow-xl shadow-slate-900/5 dark:shadow-2xl">
 
         <label class="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">
@@ -302,7 +306,7 @@ const aoTeclar = (event: KeyboardEvent) => {
       </div>
 
       <!-- Card: etapa 2, confirmação do PIN -->
-      <div v-else
+      <div v-else key="pin"
         class="bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-8 shadow-xl shadow-slate-900/5 dark:shadow-2xl">
 
         <label class="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">
@@ -351,6 +355,8 @@ const aoTeclar = (event: KeyboardEvent) => {
         </div>
 
       </div>
+
+      </Transition>
 
       <!-- Rodapé -->
       <p class="text-center text-slate-400 dark:text-slate-500 text-xs mt-6">
