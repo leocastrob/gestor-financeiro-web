@@ -20,36 +20,12 @@ const meses = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
-const mesAtual = new Date().getMonth() + 1
-const anoAtual = new Date().getFullYear()
-
-const filtroMes = ref(mesAtual)
-const filtroAno = ref(anoAtual)
-
-const mesAnterior = () => {
-  if (filtroMes.value === 1) {
-    filtroMes.value = 12
-    filtroAno.value -= 1
-  } else {
-    filtroMes.value -= 1
-  }
-}
-
-const proximoMes = () => {
-  if (filtroMes.value === 12) {
-    filtroMes.value = 1
-    filtroAno.value += 1
-  } else {
-    filtroMes.value += 1
-  }
-}
-
 // --- Comparativo com o mês anterior (stat tile) ---
 const totalMesAnterior = ref<number | null>(null)
 
 const buscarTotalMesAnterior = async () => {
-  let mes = filtroMes.value - 1
-  let ano = filtroAno.value
+  let mes = gastosStore.filtroMes - 1
+  let ano = gastosStore.filtroAno
   if (mes === 0) {
     mes = 12
     ano -= 1
@@ -162,7 +138,7 @@ const confirmarNovoGasto = async () => {
   if (criado) {
     adicionandoAberto.value = false
     mostrarToast(`Gasto adicionado (${criado.categoria}) ✓`)
-    await gastosStore.buscarGastos(filtroMes.value, filtroAno.value)
+    await gastosStore.buscarGastos(gastosStore.filtroMes, gastosStore.filtroAno)
     await buscarTotalMesAnterior()
   }
 }
@@ -198,9 +174,9 @@ const excluir = async (id: number | string) => {
   if (!gastosStore.erroAcao) mostrarToast('Gasto excluído ✓')
 }
 
-// Dispara a busca sempre que o mês ou ano mudar
-watch([filtroMes, filtroAno], () => {
-  gastosStore.buscarGastos(filtroMes.value, filtroAno.value)
+// Recalcula o comparativo com o mês anterior sempre que o mês/ano em exibição mudar.
+// A busca da lista em si (buscarGastos) já é refeita automaticamente pelo store.
+watch([() => gastosStore.filtroMes, () => gastosStore.filtroAno], () => {
   buscarTotalMesAnterior()
 })
 
@@ -219,7 +195,7 @@ const sair = () => {
 }
 
 onMounted(() => {
-  gastosStore.buscarGastos(filtroMes.value, filtroAno.value)
+  gastosStore.buscarGastos(gastosStore.filtroMes, gastosStore.filtroAno)
   buscarTotalMesAnterior()
 })
 </script>
@@ -247,14 +223,14 @@ onMounted(() => {
       <!-- Seletor de mês -->
       <div
         class="flex items-center justify-between gap-2 mb-6 bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-2 py-2">
-        <button @click="mesAnterior" aria-label="Mês anterior"
+        <button @click="gastosStore.mesAnterior" aria-label="Mês anterior"
           class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-900/5 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60">
           ‹
         </button>
         <span class="font-semibold text-slate-800 dark:text-slate-100 text-sm sm:text-base">
-          {{ meses[filtroMes - 1] }} de {{ filtroAno }}
+          {{ meses[gastosStore.filtroMes - 1] }} de {{ gastosStore.filtroAno }}
         </span>
-        <button @click="proximoMes" aria-label="Próximo mês"
+        <button @click="gastosStore.proximoMes" aria-label="Próximo mês"
           class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-900/5 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60">
           ›
         </button>
@@ -335,7 +311,7 @@ onMounted(() => {
             </p>
             <p v-if="variacaoPercentual !== null" class="text-xs font-semibold mt-1.5" :class="variacaoPercentual > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'">
               {{ variacaoPercentual > 0 ? '↑' : variacaoPercentual < 0 ? '↓' : '→' }}
-              {{ Math.abs(variacaoPercentual).toFixed(0) }}% vs. {{ meses[(filtroMes - 2 + 12) % 12] }}
+              {{ Math.abs(variacaoPercentual).toFixed(0) }}% vs. {{ meses[(gastosStore.filtroMes - 2 + 12) % 12] }}
             </p>
           </div>
           <div class="text-right">

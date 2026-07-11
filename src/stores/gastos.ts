@@ -28,6 +28,34 @@ export const useGastosStore = defineStore('gastos', () => {
     }
   })
 
+  // Mês/ano em exibição — compartilhado entre as abas Dashboard e Lançamentos
+  const hoje = new Date()
+  const filtroMes = ref(hoje.getMonth() + 1)
+  const filtroAno = ref(hoje.getFullYear())
+
+  const mesAnterior = () => {
+    if (filtroMes.value === 1) {
+      filtroMes.value = 12
+      filtroAno.value -= 1
+    } else {
+      filtroMes.value -= 1
+    }
+  }
+
+  const proximoMes = () => {
+    if (filtroMes.value === 12) {
+      filtroMes.value = 1
+      filtroAno.value += 1
+    } else {
+      filtroMes.value += 1
+    }
+  }
+
+  // Refaz a busca sempre que o mês ou ano em exibição mudar
+  watch([filtroMes, filtroAno], () => {
+    buscarGastos(filtroMes.value, filtroAno.value)
+  })
+
   // Estado
   const transacoes = ref<Transacao[]>([])
   const carregando = ref(false)
@@ -113,6 +141,10 @@ export const useGastosStore = defineStore('gastos', () => {
     erro,
     erroAcao,
     telefone,
+    filtroMes,
+    filtroAno,
+    mesAnterior,
+    proximoMes,
     totalGastos,
     totalGastosNumerico,
     setTelefone,
