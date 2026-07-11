@@ -1084,6 +1084,11 @@ const confirmarNovoGasto = async () => {
   if (criado) {
     adicionandoAberto.value = false
     mostrarToast(`Gasto adicionado (${criado.categoria}) ✓`)
+    // gastosStore.criarGasto() só retorna o registro criado — não o insere em
+    // transacoes.value (diferente de excluirGasto/editarGasto, que já
+    // atualizam o estado local). Sem este refetch o novo gasto fica invisível
+    // na lista até a próxima remontagem do AppShell ou troca de mês.
+    await gastosStore.buscarGastos(gastosStore.filtroMes, gastosStore.filtroAno)
   }
 }
 
