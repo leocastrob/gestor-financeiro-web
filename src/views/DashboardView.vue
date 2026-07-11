@@ -5,6 +5,7 @@ import { formatarMoeda } from '../utils/formatarMoeda'
 import { MESES } from '../constants/meses'
 import AppShell from '../layouts/AppShell.vue'
 import GraficoCategorias from '../components/GraficoCategorias.vue'
+import GraficoHistorico from '../components/GraficoHistorico.vue'
 import * as api from '../services/api'
 import type { Transacao } from '../stores/gastos'
 
@@ -79,6 +80,8 @@ onMounted(() => {
       </div>
 
       <GraficoCategorias v-if="gastosStore.transacoesVisiveis.length > 0" :transacoes="gastosStore.transacoesVisiveis" />
+
+      <GraficoHistorico :telefone="gastosStore.telefone" />
 
       <div v-if="gastosStore.transacoesVisiveis.length === 0" class="min-h-[30vh] flex flex-col items-center justify-center text-center">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-900/5 dark:bg-white/5 mb-4">
