@@ -148,3 +148,47 @@ O código escrito para implementar o #6 (`CategoriasView.vue`, `CategoriaPersona
 - **Nome de categoria personalizada pode colidir com o nome de uma categoria fixa do sistema** (ex.: criar uma categoria personalizada chamada "Alimentação"). A `UNIQUE KEY (telefone, nome)` em `categorias_personalizadas` não sabe nada sobre as 8 categorias fixas (elas não vivem nessa tabela), então o back-end aceita o cadastro sem erro — e `corDaCategoria`/`iconeDaCategoria` sempre resolvem o nome fixo primeiro, então a categoria personalizada fica "invisível" atrás da fixa (aparece com a cor/ícone do sistema, não os dela). Baixo impacto na prática (exige o usuário digitar de propósito um nome que já existe), mas seria uma validação simples de adicionar no POST/PATCH de `routes/api/categorias/index.js` se quiser fechar essa lacuna.
 
 **Verificação após a segunda passada:** `npm test` (28 testes), `lint:eslint`, `vue-tsc --build` e `npm run build` novamente verdes.
+
+---
+
+## Terceira passada — navegação e responsividade completa (2026-07-12)
+
+Motivada por feedback direto do usuário: com 6 rotas, a tab bar horizontal do `AppShell` (mesmo já remendada com `overflow-x-auto` na primeira passada) virou um problema estrutural, não só cosmético — e os cards de Despesas/Receitas/Saldo do Dashboard foram apontados como "ruins". Decisão de design (conversada, sem gerar spec formal a pedido do usuário): **80% do uso é mobile, 20% desktop, e o desktop também estava ruim** (coluna central de 672px desperdiçando tela grande).
+
+### Mudanças
+
+- **`AppShell.vue` reescrito**: um breakpoint só (`lg:`, 1024px) decide tudo.
+  - **< 1024px**: cabeçalho no topo (como antes) + **bottom nav fixo** com Dashboard/Lançamentos sempre visíveis + botão "Mais" (`DropdownMenu` do reka-ui, mesmo padrão do `ExportarMenu.vue`) com Dívidas/Contas Fixas/Importar/Categorias.
+  - **≥ 1024px**: **sidebar fixa à esquerda** substitui a tab bar — todos os 6 itens numa lista vertical, sem aperto nenhum. Cabeçalho mobile (logo/telefone/"Trocar") some, vira parte da sidebar.
+  - Navegação trocou de `TabsRoot`/`TabsTrigger` (semântica de abas dentro da mesma tela) para `<nav>` + `<button aria-current="page">` (semântica mais correta pra navegação entre páginas).
+- **Ordem das telas recalibrada por frequência de uso real**: Dashboard → Lançamentos → Dívidas → Contas Fixas → Importar → Categorias (antes: Importar vinha na 3ª posição; hoje reflete que é uso esporádico, atrás das duas telas de checagem periódica).
+- **`ThemeToggle.vue`**: sobe posição no mobile (`bottom-20 lg:bottom-4`) pra não colidir com o bottom nav novo.
+- **`DashboardView.vue`**: layout em 2 colunas a partir de `lg:` (esquerda: resumo do mês + gráfico de categorias; direita: histórico + metas) — usa o espaço extra do desktop em vez de ficar tudo empilhado numa coluna estreita.
+- **Cards de Despesas/Receitas/Saldo**: o bug real era `grid-cols-3` sem nenhum breakpoint de fonte — o mesmo `text-xl` fixo tanto em celular de 360px quanto em monitor grande, apertando valores tipo "R$ 12.345,67". Corrigido pra `text-base sm:text-xl` + `truncate` nos 3 cards.
+- **Telas de lista/formulário** (Lançamentos, Dívidas, Contas Fixas, Categorias, Importar) ganharam `lg:max-w-2xl` no container raiz — no desktop, a "fatia" de conteúdo ao lado da sidebar é bem mais larga (~1200px), mas essas telas continuam com largura de leitura confortável em vez de esticar até o limite; só o Dashboard usa a largura toda (com o grid de 2 colunas).
+
+### Achado descartado (não era bug de verdade)
+Cheguei a propor aplicar a mesma correção de fonte responsiva nos grids de estatística do `ImportarExtratoView.vue` (transações/arquivo, importadas/duplicadas/no arquivo) — na revisão, esses cards mostram só contagens curtas (poucos dígitos), não valores monetários formatados como os do Dashboard. Sem risco real de overflow, então não mexi — mudar só por "consistência" ali seria alteração sem motivo real.
+
+**Verificação:** `npm test` (28 testes), `lint:eslint`, `vue-tsc --build` e `npm run build` verdes.
+
+---
+
+## Fase B — verificação visual manual, finalmente feita (2026-07-12)
+
+Nenhuma ferramenta de screenshot vinha disponível nas passadas anteriores. Nesta, encontrei `chromium` do Playwright já em cache no ambiente (`~/.cache/ms-playwright`) — instalei o pacote `playwright` isolado num diretório de scratchpad (fora dos dois repositórios, não gera dependência nova no projeto), subi o `npm run dev` e dirigi um Chromium headless de verdade: mobile (390px) e desktop (1280px) × tema claro/escuro, com a API mockada (`page.route`) simulando gastos/metas reais, já que o back-end não estava rodando localmente.
+
+### Bug real encontrado e corrigido nesta verificação
+
+**Os 3 cards de resumo (Despesas/Receitas/Saldo) continuavam cortando o valor com "…", mesmo depois da correção de fonte responsiva da passada anterior.** A correção anterior (`text-base sm:text-xl` + `truncate`) foi testada só por leitura de código — o screenshot mostrou "R$ 3.30…" tanto no mobile quanto no desktop. Causa raiz: 3 colunas iguais são estreitas demais pra um valor tipo "R$ 3.309,76" em qualquer largura de tela testada (no desktop a situação piorou porque o Dashboard passou a dividir a tela em 2 colunas — o grid de 3 cards agora vive só na metade esquerda, menos espaço que antes). `truncate` escondia o problema em vez de resolver — pior que estourar o card, porque esconde dado financeiro de verdade.
+
+**Correção:** redesenhei o bloco (`DashboardView.vue`) — Saldo do mês vira um card único, largura cheia, em destaque (fonte maior, é o número mais olhado); Despesas/Receitas ficam lado a lado em 2 colunas (metade da largura cada, bem mais espaço que um terço). Sem `truncate` em lugar nenhum agora — se algum dia não couber, é sinal de que precisa ajustar o layout de novo, não esconder o dígito. Reverifiquei com o mesmo Chromium: valores aparecem completos em 390px e 1280px, claro e escuro.
+
+### Outras confirmações visuais
+- Bottom nav (mobile) + menu "Mais" (dropdown com Dívidas/Contas Fixas/Importar/Categorias): renderiza e abre corretamente, item ativo destacado.
+- Sidebar (desktop): todos os 6 itens em ordem, item ativo com fundo emerald, "Trocar número" no rodapé.
+- `ThemeToggle` reposicionado (`bottom-20 lg:bottom-4`): confirmado sem colidir com o bottom nav, inclusive testando o scroll real da página (não só screenshot `fullPage`, que distorce a posição de elementos `fixed` — usei um screenshot de viewport real rolado até o fim pra confirmar que o bottom nav fica de verdade fixo na tela, não "flutuando no meio do conteúdo").
+- Dashboard em 2 colunas no desktop: coluna esquerda (resumo + categorias), direita (histórico + metas) — confirmado visualmente.
+- Telas de lista (`lg:max-w-2xl`): confirmado que o conteúdo não estica até o limite dos ~1150px disponíveis, mantém largura de leitura.
+
+**Verificação final:** `npm test` (28 testes), `lint:eslint`, `vue-tsc --build`, `npm run build` verdes. Dev server e artefatos do Playwright encerrados/isolados no scratchpad, nada vazou pro repositório.
