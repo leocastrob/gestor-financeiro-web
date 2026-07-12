@@ -99,3 +99,60 @@ export function removerMeta(telefone: string, categoria: string) {
     method: 'DELETE',
   }).then(tratarResposta)
 }
+
+// --- Extrato bancário (Feature 1) ---
+
+export interface PreviewExtratoResponse {
+  formato: 'OFX' | 'CSV'
+  nomeBanco: string | null
+  totalLinhas: number
+  precisaMapeamento: boolean
+  colunas?: string[]
+  amostra?: Record<string, unknown>[]
+  perfilExistente?: boolean
+}
+
+export interface MapeamentoCSV {
+  colunaData: string
+  colunaDescricao: string
+  colunaValor: string
+  formatoData?: string
+  separadorDecimal?: string
+  nomeBanco?: string
+}
+
+export interface ImportarExtratoResponse {
+  extratoId: number
+  formato: string
+  nomeBanco: string | null
+  totalLinhas: number
+  totalImportadas: number
+  totalDuplicadas: number
+}
+
+export function previewExtrato(file: File, telefone: string): Promise<PreviewExtratoResponse> {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('telefone', telefone)
+  return fetch(`${BASE_URL}/api/extratos/preview`, {
+    method: 'POST',
+    body: form,
+  }).then(tratarResposta)
+}
+
+export function importarExtrato(
+  file: File,
+  telefone: string,
+  mapeamento?: MapeamentoCSV,
+): Promise<ImportarExtratoResponse> {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('telefone', telefone)
+  if (mapeamento) {
+    form.append('mapeamento', JSON.stringify(mapeamento))
+  }
+  return fetch(`${BASE_URL}/api/extratos/importar`, {
+    method: 'POST',
+    body: form,
+  }).then(tratarResposta)
+}

@@ -23,6 +23,7 @@ onMounted(() => {
 const ABAS = [
   { valor: 'painel', rota: '/painel', rotulo: 'Dashboard' },
   { valor: 'lancamentos', rota: '/lancamentos', rotulo: 'Lançamentos' },
+  { valor: 'importar', rota: '/importar', rotulo: '📄 Importar' },
 ] as const
 
 const abaAtiva = computed(() => ABAS.find((a) => a.rota === route.path)?.valor ?? 'painel')
