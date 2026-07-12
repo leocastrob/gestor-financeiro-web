@@ -9,6 +9,7 @@ const transacaoExemplo = (sobrescritas: Partial<Transacao> = {}): Transacao => (
   categoria: 'Alimentação',
   valor: 50,
   data: '2026-07-05T12:00:00.000Z',
+  tipo: 'despesa',
   ...sobrescritas,
 })
 

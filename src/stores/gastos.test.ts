@@ -33,7 +33,7 @@ describe('useGastosStore — excluir com desfazer', () => {
   it('some da lista visível imediatamente, mas não chama a API antes do tempo de graça', () => {
     const store = useGastosStore()
     store.transacoes = [
-      { id: 1, telefone: '5511999999999', descricao: 'mercado', categoria: 'Alimentação', valor: 50, data: '2026-07-01' },
+      { id: 1, telefone: '5511999999999', descricao: 'mercado', categoria: 'Alimentação', valor: 50, data: '2026-07-01', tipo: 'despesa' },
     ]
 
     store.marcarParaExcluir(1)
@@ -45,7 +45,7 @@ describe('useGastosStore — excluir com desfazer', () => {
   it('desfazer restaura o item e nunca chama a API', () => {
     const store = useGastosStore()
     store.transacoes = [
-      { id: 1, telefone: '5511999999999', descricao: 'mercado', categoria: 'Alimentação', valor: 50, data: '2026-07-01' },
+      { id: 1, telefone: '5511999999999', descricao: 'mercado', categoria: 'Alimentação', valor: 50, data: '2026-07-01', tipo: 'despesa' },
     ]
 
     store.marcarParaExcluir(1)
@@ -60,7 +60,7 @@ describe('useGastosStore — excluir com desfazer', () => {
   it('sem desfazer, chama a API de verdade após o tempo de graça e remove definitivamente', async () => {
     const store = useGastosStore()
     store.transacoes = [
-      { id: 1, telefone: '5511999999999', descricao: 'mercado', categoria: 'Alimentação', valor: 50, data: '2026-07-01' },
+      { id: 1, telefone: '5511999999999', descricao: 'mercado', categoria: 'Alimentação', valor: 50, data: '2026-07-01', tipo: 'despesa' },
     ]
 
     store.marcarParaExcluir(1)

@@ -6,7 +6,7 @@ import type { Transacao } from '../stores/gastos'
 // deslocamento de fuso horário na conversão UTC → local (o mesmo cuidado
 // documentado no comentário de fixtures em stores/gastos.test.ts).
 function transacao(data: string, valor: number): Transacao {
-  return { id: 1, telefone: '5511999999999', descricao: 'teste', categoria: 'Outros', valor, data }
+  return { id: 1, telefone: '5511999999999', descricao: 'teste', categoria: 'Outros', valor, data, tipo: 'despesa' }
 }
 
 describe('agregarUltimosMeses', () => {
