@@ -5,6 +5,7 @@ import { TabsRoot, TabsList, TabsTrigger } from 'reka-ui'
 import { useGastosStore } from '../stores/gastos'
 import { useMetasStore } from '../stores/metas'
 import { useDividasStore } from '../stores/dividas'
+import { useContasFixasStore } from '../stores/contasFixas'
 import { MESES } from '../constants/meses'
 
 const route = useRoute()
@@ -12,6 +13,7 @@ const router = useRouter()
 const gastosStore = useGastosStore()
 const metasStore = useMetasStore()
 const dividasStore = useDividasStore()
+const contasFixasStore = useContasFixasStore()
 
 // AppShell é remontado a cada troca de aba (Dashboard <-> Lançamentos são rotas
 // diferentes, cada uma com sua própria instância de AppShell) — por isso é o
@@ -27,6 +29,7 @@ const ABAS = [
   { valor: 'lancamentos', rota: '/lancamentos', rotulo: 'Lançamentos' },
   { valor: 'importar', rota: '/importar', rotulo: '📄 Importar' },
   { valor: 'dividas', rota: '/dividas', rotulo: '💳 Dívidas' },
+  { valor: 'contas-fixas', rota: '/contas-fixas', rotulo: '🔁 Fixas' },
 ] as const
 
 const abaAtiva = computed(() => ABAS.find((a) => a.rota === route.path)?.valor ?? 'painel')
@@ -48,6 +51,7 @@ const sair = () => {
   gastosStore.logout()
   metasStore.resetar()
   dividasStore.resetar()
+  contasFixasStore.resetar()
   router.push('/')
 }
 </script>

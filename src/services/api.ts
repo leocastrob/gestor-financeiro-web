@@ -227,3 +227,77 @@ export function lancarParcela(id: number | string): Promise<LancarParcelaRespons
     method: 'POST',
   }).then(tratarResposta)
 }
+
+// --- Contas fixas recorrentes (Feature 3) ---
+
+export interface ContaFixa {
+  id: number
+  telefone: string
+  descricao: string
+  categoria: string
+  valor: number | string
+  dia_vencimento: number
+  dias_lembrete_antes: number
+  lancamento_automatico: number | boolean
+  ativa: number | boolean
+  criado_em: string
+  paga_neste_mes: boolean
+}
+
+export interface DadosNovaContaFixa {
+  descricao: string
+  categoria?: string
+  valor: number
+  dia_vencimento: number
+  dias_lembrete_antes?: number
+  lancamento_automatico?: boolean | number
+}
+
+export interface DadosEdicaoContaFixa {
+  descricao?: string
+  categoria?: string
+  valor?: number
+  dia_vencimento?: number
+  dias_lembrete_antes?: number
+  lancamento_automatico?: boolean | number
+}
+
+export interface LancarContaResponse {
+  sucesso: boolean
+  jaLancada: boolean
+}
+
+export function buscarContasFixas(telefone: string): Promise<ContaFixa[]> {
+  return fetch(`${BASE_URL}/api/contas-fixas/${telefone}`).then(tratarResposta)
+}
+
+export function criarContaFixa(telefone: string, dados: DadosNovaContaFixa): Promise<ContaFixa> {
+  return fetch(`${BASE_URL}/api/contas-fixas`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone, ...dados }),
+  }).then(tratarResposta)
+}
+
+export function editarContaFixa(id: number | string, telefone: string, dados: DadosEdicaoContaFixa) {
+  return fetch(`${BASE_URL}/api/contas-fixas/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone, ...dados }),
+  }).then(tratarResposta)
+}
+
+export function excluirContaFixa(id: number | string, telefone: string) {
+  return fetch(`${BASE_URL}/api/contas-fixas/${id}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone }),
+  }).then(tratarResposta)
+}
+
+export function lancarContaFixa(id: number | string): Promise<LancarContaResponse> {
+  return fetch(`${BASE_URL}/api/contas-fixas/${id}/lancar`, {
+    method: 'POST',
+  }).then(tratarResposta)
+}
+
