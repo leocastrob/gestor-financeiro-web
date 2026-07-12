@@ -16,10 +16,13 @@ const metasStore = useMetasStore()
 
 const totalPorCategoria = computed(() => {
   const contagem: Record<string, number> = {}
-  gastosStore.transacoesVisiveis.forEach((g) => {
-    const cat = g.categoria || 'Outros'
-    contagem[cat] = (contagem[cat] || 0) + Number(g.valor)
-  })
+  // Considera apenas despesas no gráfico de categorias e nas barras de meta
+  gastosStore.transacoesVisiveis
+    .filter((g) => g.tipo === 'despesa')
+    .forEach((g) => {
+      const cat = g.categoria || 'Outros'
+      contagem[cat] = (contagem[cat] || 0) + Number(g.valor)
+    })
   return contagem
 })
 
@@ -80,23 +83,49 @@ onMounted(() => {
     </div>
 
     <div v-else class="space-y-4">
+      <!-- Cards de resumo financeiro do mês -->
       <div v-if="gastosStore.transacoesVisiveis.length > 0"
         v-motion :initial="{ opacity: 0, y: 12 }" :enter="{ opacity: 1, y: 0, transition: { duration: 300 } }"
-        class="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20 rounded-2xl p-5 flex justify-between items-center">
-        <div>
-          <p class="text-emerald-700/80 dark:text-emerald-400/70 text-xs font-semibold uppercase tracking-wider">Total gasto</p>
-          <p class="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1 font-mono">
-            {{ formatarMoeda(gastosStore.totalGastosNumerico) }}
+        class="grid grid-cols-3 gap-2">
+
+        <!-- Total de Despesas -->
+        <div class="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex flex-col gap-1">
+          <p class="text-red-700/80 dark:text-red-400/70 text-xs font-semibold uppercase tracking-wider leading-tight">Despesas</p>
+          <p class="text-xl font-black text-red-600 dark:text-red-400 font-mono tabular-nums">
+            {{ gastosStore.totalGastos }}
           </p>
-          <p v-if="variacaoPercentual !== null" class="text-xs font-semibold mt-1.5"
+          <p v-if="variacaoPercentual !== null" class="text-xs font-semibold"
             :class="variacaoPercentual > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'">
             {{ variacaoPercentual > 0 ? '↑' : variacaoPercentual < 0 ? '↓' : '→' }}
             {{ Math.abs(variacaoPercentual).toFixed(0) }}% vs. {{ MESES[(gastosStore.filtroMes - 2 + 12) % 12] }}
           </p>
         </div>
-        <div class="text-right">
-          <p class="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider">Registros</p>
-          <p class="text-2xl font-black text-slate-700 dark:text-slate-300 mt-1 font-mono">{{ gastosStore.transacoesVisiveis.length }}</p>
+
+        <!-- Total de Receitas -->
+        <div class="bg-sky-500/10 border border-sky-500/20 rounded-2xl p-4 flex flex-col gap-1">
+          <p class="text-sky-700/80 dark:text-sky-400/70 text-xs font-semibold uppercase tracking-wider leading-tight">Receitas</p>
+          <p class="text-xl font-black text-sky-600 dark:text-sky-400 font-mono tabular-nums">
+            {{ gastosStore.totalReceitas }}
+          </p>
+        </div>
+
+        <!-- Saldo do mês -->
+        <div class="rounded-2xl p-4 flex flex-col gap-1 border"
+          :class="gastosStore.saldoNumerico >= 0
+            ? 'bg-emerald-500/10 border-emerald-500/20'
+            : 'bg-amber-500/10 border-amber-500/20'">
+          <p class="text-xs font-semibold uppercase tracking-wider leading-tight"
+            :class="gastosStore.saldoNumerico >= 0
+              ? 'text-emerald-700/80 dark:text-emerald-400/70'
+              : 'text-amber-700/80 dark:text-amber-400/70'">
+            Saldo
+          </p>
+          <p class="text-xl font-black font-mono tabular-nums"
+            :class="gastosStore.saldoNumerico >= 0
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : 'text-amber-600 dark:text-amber-400'">
+            {{ gastosStore.saldo }}
+          </p>
         </div>
       </div>
 

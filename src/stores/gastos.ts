@@ -11,6 +11,7 @@ export interface Transacao {
   categoria: string
   valor: number | string
   data: string | Date
+  tipo: 'despesa' | 'receita'
 }
 
 export { CATEGORIAS } from '../theme/categorias'
@@ -63,9 +64,21 @@ export const useGastosStore = defineStore('gastos', () => {
   // Erro de uma ação pontual (excluir/editar) — exibido como banner dispensável, não bloqueia a tela
   const erroAcao = ref<string | null>(null)
 
-  // Computed: total de gastos, valor bruto (para cálculos) e formatado (para exibição)
-  const totalGastosNumerico = computed(() => transacoesVisiveis.value.reduce((acc, t) => acc + Number(t.valor), 0))
+  // Computed: totais de despesas, receitas, saldo e formatações para exibição
+  const totalGastosNumerico = computed(() =>
+    transacoesVisiveis.value
+      .filter((t) => t.tipo === 'despesa')
+      .reduce((acc, t) => acc + Number(t.valor), 0),
+  )
+  const totalReceitasNumerico = computed(() =>
+    transacoesVisiveis.value
+      .filter((t) => t.tipo === 'receita')
+      .reduce((acc, t) => acc + Number(t.valor), 0),
+  )
+  const saldoNumerico = computed(() => totalReceitasNumerico.value - totalGastosNumerico.value)
   const totalGastos = computed(() => formatarMoeda(totalGastosNumerico.value))
+  const totalReceitas = computed(() => formatarMoeda(totalReceitasNumerico.value))
+  const saldo = computed(() => formatarMoeda(saldoNumerico.value))
 
   // Define o telefone do usuário logado
   const setTelefone = (num: string) => {
@@ -173,6 +186,10 @@ export const useGastosStore = defineStore('gastos', () => {
     proximoMes,
     totalGastos,
     totalGastosNumerico,
+    totalReceitas,
+    totalReceitasNumerico,
+    saldo,
+    saldoNumerico,
     setTelefone,
     buscarGastos,
     criarGasto,

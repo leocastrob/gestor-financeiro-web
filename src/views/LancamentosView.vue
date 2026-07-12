@@ -15,6 +15,7 @@ const adicionandoAberto = ref(false)
 const novaDescricao = ref('')
 const novaCategoria = ref('')
 const novoValor = ref('')
+const novoTipo = ref<'despesa' | 'receita'>('despesa')
 const criando = ref(false)
 
 const novoGastoValido = computed(() => {
@@ -27,6 +28,7 @@ const abrirNovoGasto = () => {
   novaDescricao.value = ''
   novaCategoria.value = ''
   novoValor.value = ''
+  novoTipo.value = 'despesa'
 }
 
 const cancelarNovoGasto = () => {
@@ -40,17 +42,13 @@ const confirmarNovoGasto = async () => {
     descricao: novaDescricao.value.trim(),
     valor: Number(novoValor.value.replace(',', '.')),
     categoria: novaCategoria.value || undefined,
+    tipo: novoTipo.value,
   })
   criando.value = false
   if (criado) {
     adicionandoAberto.value = false
-    mostrarToast(`Gasto adicionado (${criado.categoria}) ✓`)
-    // gastosStore.criarGasto() só retorna o registro criado — não o insere em
-    // transacoes.value (diferente de excluirGasto/editarGasto, que já
-    // atualizam o estado local). Sem este refetch o novo gasto fica invisível
-    // na lista até a próxima remontagem do AppShell ou troca de mês. O
-    // GastosView.vue original (pré-Task 7) já fazia essa mesma chamada por
-    // este exato motivo; ficou de fora da extração literal do brief.
+    const label = novoTipo.value === 'receita' ? 'Receita adicionada' : 'Gasto adicionado'
+    mostrarToast(`${label} (${criado.categoria}) ✓`)
     await gastosStore.buscarGastos(gastosStore.filtroMes, gastosStore.filtroAno)
   }
 }
@@ -110,19 +108,43 @@ const executarAcaoToast = () => {
   <AppShell>
     <div class="space-y-3">
 
-      <!-- Adicionar gasto pelo portal + exportar -->
+      <!-- Botão principal: muda label e gradiente conforme tipo selecionado -->
       <div v-if="!adicionandoAberto" class="flex gap-2 mb-2">
-        <button id="btn-novo-gasto" @click="abrirNovoGasto"
-          class="flex-1 py-3.5 rounded-2xl font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60">
-          + Novo gasto
+        <button id="btn-novo-lancamento" @click="abrirNovoGasto"
+          class="flex-1 py-3.5 rounded-2xl font-bold text-white shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+          :class="novoTipo === 'receita'
+            ? 'bg-gradient-to-r from-sky-500 to-sky-600 shadow-sky-500/20 hover:shadow-sky-500/40'
+            : 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/20 hover:shadow-emerald-500/40'">
+          + Novo lançamento
         </button>
         <ExportarMenu :transacoes="gastosStore.transacoesVisiveis" :mes="gastosStore.filtroMes" :ano="gastosStore.filtroAno" />
       </div>
 
       <div v-else class="mb-2 bg-white/80 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-lg shadow-slate-900/5 dark:shadow-none">
-        <p class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">💸 Novo gasto</p>
+        <!-- Toggle despesa / receita -->
+        <div class="flex gap-1 mb-4 bg-slate-100 dark:bg-white/5 rounded-xl p-1">
+          <button id="btn-tipo-despesa"
+            @click="novoTipo = 'despesa'"
+            class="flex-1 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+            :class="novoTipo === 'despesa'
+              ? 'bg-white dark:bg-white/15 text-red-500 shadow-sm'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'">
+            💸 Despesa
+          </button>
+          <button id="btn-tipo-receita"
+            @click="novoTipo = 'receita'"
+            class="flex-1 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
+            :class="novoTipo === 'receita'
+              ? 'bg-white dark:bg-white/15 text-sky-500 shadow-sm'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'">
+            💰 Receita
+          </button>
+        </div>
+
         <div class="space-y-3">
-          <input v-model="novaDescricao" type="text" placeholder="Descrição (ex: mercado, uber, netflix)" autofocus
+          <input v-model="novaDescricao" type="text"
+            :placeholder="novoTipo === 'receita' ? 'Descrição (ex: salário, freelance, aluguel)' : 'Descrição (ex: mercado, uber, netflix)'"
+            autofocus
             class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400" />
           <div class="flex gap-2 sm:gap-3">
             <CategoriaSelect v-model="novaCategoria" incluir-automatica />
@@ -135,8 +157,9 @@ const executarAcaoToast = () => {
               Cancelar
             </button>
             <button @click="confirmarNovoGasto" :disabled="!novoGastoValido || criando"
-              class="px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60">
-              {{ criando ? 'Adicionando...' : 'Adicionar' }}
+              class="px-4 py-2 text-sm font-bold text-white rounded-xl transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+              :class="novoTipo === 'receita' ? 'bg-sky-600 hover:bg-sky-500 focus-visible:ring-sky-400/60' : 'bg-emerald-600 hover:bg-emerald-500'">
+              {{ criando ? 'Adicionando...' : (novoTipo === 'receita' ? 'Adicionar receita' : 'Adicionar despesa') }}
             </button>
           </div>
         </div>
@@ -178,8 +201,8 @@ const executarAcaoToast = () => {
           <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-900/5 dark:bg-white/5 mb-4">
             <span class="text-3xl">📭</span>
           </div>
-          <p class="text-slate-500 dark:text-slate-400 text-lg font-semibold">Nenhum gasto registrado.</p>
-          <p class="text-slate-400 dark:text-slate-600 text-sm mt-2">Mande uma mensagem pelo WhatsApp ou toque em "+ Novo gasto" para começar!</p>
+          <p class="text-slate-500 dark:text-slate-400 text-lg font-semibold">Nenhum lançamento registrado.</p>
+          <p class="text-slate-400 dark:text-slate-600 text-sm mt-2">Mande uma mensagem pelo WhatsApp ou toque em "+ Novo lançamento" para começar!</p>
         </div>
       </div>
     </div>

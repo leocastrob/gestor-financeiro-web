@@ -21,12 +21,14 @@ export interface DadosEdicaoGasto {
   descricao?: string
   categoria?: string
   valor?: number
+  tipo?: 'despesa' | 'receita'
 }
 
 export interface DadosNovoGasto {
   descricao: string
   valor: number
   categoria?: string
+  tipo?: 'despesa' | 'receita'
 }
 
 export function buscarGastos(telefone: string, mes?: number, ano?: number) {
