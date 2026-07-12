@@ -35,9 +35,14 @@ const ABAS = [
   { valor: 'importar', rota: '/importar', rotulo: '📄 Importar' },
   { valor: 'dividas', rota: '/dividas', rotulo: '💳 Dívidas' },
   { valor: 'contas-fixas', rota: '/contas-fixas', rotulo: '🔁 Fixas' },
+  { valor: 'categorias', rota: '/categorias', rotulo: '🏷️ Categorias' },
 ] as const
 
 const abaAtiva = computed(() => ABAS.find((a) => a.rota === route.path)?.valor ?? 'painel')
+
+// Seletor de mês só faz sentido nas abas que filtram dados por mês —
+// Importar/Dívidas/Contas Fixas ignoram filtroMes/filtroAno por completo.
+const mostrarSeletorMes = computed(() => abaAtiva.value === 'painel' || abaAtiva.value === 'lancamentos')
 
 const irParaAba = (valor: string | number) => {
   const aba = ABAS.find((a) => a.valor === valor)
@@ -85,12 +90,12 @@ const sair = () => {
       <!-- Tabs de navegação -->
       <TabsRoot :model-value="abaAtiva" @update:model-value="irParaAba">
         <TabsList
-          class="flex gap-1 mb-6 bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-1"
+          class="flex gap-1 mb-6 bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-1 overflow-x-auto scrollbar-thin sm:flex-wrap"
           aria-label="Navegação principal"
         >
           <TabsTrigger
             v-for="aba in ABAS" :key="aba.valor" :value="aba.valor"
-            class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 text-slate-500 dark:text-slate-400 data-[state=active]:bg-emerald-500 data-[state=active]:text-white hover:text-slate-900 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+            class="flex-shrink-0 sm:flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors duration-200 text-slate-500 dark:text-slate-400 data-[state=active]:bg-emerald-500 data-[state=active]:text-white hover:text-slate-900 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
           >
             {{ aba.rotulo }}
           </TabsTrigger>
@@ -98,7 +103,7 @@ const sair = () => {
       </TabsRoot>
 
       <!-- Seletor de mês -->
-      <div class="flex items-center justify-between gap-2 mb-6 bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-2 py-2">
+      <div v-if="mostrarSeletorMes" class="flex items-center justify-between gap-2 mb-6 bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-2 py-2">
         <button @click="gastosStore.mesAnterior" aria-label="Mês anterior"
           class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-900/5 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60">
           ‹

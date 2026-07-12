@@ -318,6 +318,11 @@ export interface DadosNovaCategoria {
   tipo?: 'despesa' | 'receita'
 }
 
+export interface DadosEdicaoCategoria {
+  nome?: string
+  icone?: string
+}
+
 export function buscarCategoriasCustomizadas(telefone: string): Promise<CategoriaPersonalizada[]> {
   return fetch(`${BASE_URL}/api/categorias/${telefone}`).then(tratarResposta)
 }
@@ -325,6 +330,14 @@ export function buscarCategoriasCustomizadas(telefone: string): Promise<Categori
 export function criarCategoriaCustomizada(telefone: string, dados: DadosNovaCategoria): Promise<CategoriaPersonalizada> {
   return fetch(`${BASE_URL}/api/categorias`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone, ...dados }),
+  }).then(tratarResposta)
+}
+
+export function editarCategoriaCustomizada(id: number | string, telefone: string, dados: DadosEdicaoCategoria): Promise<CategoriaPersonalizada> {
+  return fetch(`${BASE_URL}/api/categorias/${id}`, {
+    method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ telefone, ...dados }),
   }).then(tratarResposta)

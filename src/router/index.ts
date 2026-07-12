@@ -35,6 +35,11 @@ const router = createRouter({
       component: () => import('../views/ContasFixasView.vue'),
     },
     {
+      path: '/categorias',
+      name: 'categorias',
+      component: () => import('../views/CategoriasView.vue'),
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('../views/NotFoundView.vue'),
@@ -42,7 +47,7 @@ const router = createRouter({
   ],
 })
 
-const ROTAS_AUTENTICADAS = ['painel', 'lancamentos', 'importar', 'dividas', 'contas-fixas']
+const ROTAS_AUTENTICADAS = ['painel', 'lancamentos', 'importar', 'dividas', 'contas-fixas', 'categorias']
 
 // Guard: se não tem telefone na store, volta pro login
 router.beforeEach((to) => {

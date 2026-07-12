@@ -3,8 +3,10 @@ import { ref } from 'vue'
 import {
   buscarCategoriasCustomizadas,
   criarCategoriaCustomizada,
+  editarCategoriaCustomizada,
   excluirCategoriaCustomizada,
   type CategoriaPersonalizada,
+  type DadosEdicaoCategoria,
   type DadosNovaCategoria
 } from '@/services/api'
 
@@ -38,6 +40,19 @@ export const useCategoriasStore = defineStore('categorias', () => {
     }
   }
 
+  async function editarCategoria(telefone: string, id: number, dados: DadosEdicaoCategoria) {
+    erro.value = null
+    try {
+      const atualizada = await editarCategoriaCustomizada(id, telefone, dados)
+      const existente = categorias.value.find(c => c.id === id)
+      if (existente) Object.assign(existente, atualizada)
+      return true
+    } catch (e) {
+      erro.value = (e as Error).message
+      return false
+    }
+  }
+
   async function removerCategoria(telefone: string, id: number) {
     erro.value = null
     try {
@@ -61,6 +76,7 @@ export const useCategoriasStore = defineStore('categorias', () => {
     erro,
     carregarCategorias,
     adicionarCategoria,
+    editarCategoria,
     removerCategoria,
     limpar
   }
