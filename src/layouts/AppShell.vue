@@ -6,6 +6,7 @@ import { useGastosStore } from '../stores/gastos'
 import { useMetasStore } from '../stores/metas'
 import { useDividasStore } from '../stores/dividas'
 import { useContasFixasStore } from '../stores/contasFixas'
+import { useCategoriasStore } from '../stores/categorias'
 import { MESES } from '../constants/meses'
 
 const route = useRoute()
@@ -14,6 +15,7 @@ const gastosStore = useGastosStore()
 const metasStore = useMetasStore()
 const dividasStore = useDividasStore()
 const contasFixasStore = useContasFixasStore()
+const categoriasStore = useCategoriasStore()
 
 // AppShell é remontado a cada troca de aba (Dashboard <-> Lançamentos são rotas
 // diferentes, cada uma com sua própria instância de AppShell) — por isso é o
@@ -22,6 +24,9 @@ const contasFixasStore = useContasFixasStore()
 // só reage a *mudanças* de filtroMes/filtroAno, não à montagem inicial.
 onMounted(() => {
   gastosStore.buscarGastos(gastosStore.filtroMes, gastosStore.filtroAno)
+  if (gastosStore.telefone) {
+    categoriasStore.carregarCategorias(gastosStore.telefone)
+  }
 })
 
 const ABAS = [
@@ -52,6 +57,7 @@ const sair = () => {
   metasStore.resetar()
   dividasStore.resetar()
   contasFixasStore.resetar()
+  categoriasStore.limpar()
   router.push('/')
 }
 </script>

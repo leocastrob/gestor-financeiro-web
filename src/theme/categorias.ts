@@ -1,8 +1,6 @@
+import { useCategoriasStore } from '@/stores/categorias'
+
 // Cor e ícone fixos por categoria — nunca por posição/ordem de aparição.
-// Cores validadas para separação de daltonismo (CVD) contra o fundo escuro do app
-// (#0f172a) com o validador da skill de dataviz: todos os checks computáveis passam
-// (banda de luminosidade, piso de croma, contraste >= 3:1); "Outros" fica de fora do
-// conjunto categórico de propósito (cinza neutro para o catch-all).
 export interface InfoCategoria {
   cor: string
   icone: string
@@ -22,12 +20,24 @@ export const CATEGORIAS_INFO: Record<string, InfoCategoria> = {
 export const CATEGORIAS = Object.keys(CATEGORIAS_INFO)
 
 const COR_PADRAO = '#64748b'
-const ICONE_PADRAO = '📦'
+const ICONE_PADRAO = '🏷️'
 
 export function corDaCategoria(categoria: string): string {
   return CATEGORIAS_INFO[categoria]?.cor ?? COR_PADRAO
 }
 
 export function iconeDaCategoria(categoria: string): string {
-  return CATEGORIAS_INFO[categoria]?.icone ?? ICONE_PADRAO
+  if (CATEGORIAS_INFO[categoria]) return CATEGORIAS_INFO[categoria].icone
+  
+  // Tenta buscar nas categorias customizadas do usuário
+  try {
+    const store = useCategoriasStore()
+    const custom = store.categorias.find(c => c.nome === categoria)
+    if (custom) return custom.icone
+  } catch (e) {
+    // Caso seja chamado fora de contexto Vue/Pinia ativo
+  }
+  
+  return ICONE_PADRAO
 }
+

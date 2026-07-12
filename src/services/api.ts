@@ -301,3 +301,39 @@ export function lancarContaFixa(id: number | string): Promise<LancarContaRespons
   }).then(tratarResposta)
 }
 
+// --- Categorias Personalizadas (Feature 6) ---
+
+export interface CategoriaPersonalizada {
+  id: number
+  telefone: string
+  nome: string
+  icone: string
+  tipo: 'despesa' | 'receita'
+  criado_em: string
+}
+
+export interface DadosNovaCategoria {
+  nome: string
+  icone?: string
+  tipo?: 'despesa' | 'receita'
+}
+
+export function buscarCategoriasCustomizadas(telefone: string): Promise<CategoriaPersonalizada[]> {
+  return fetch(`${BASE_URL}/api/categorias/${telefone}`).then(tratarResposta)
+}
+
+export function criarCategoriaCustomizada(telefone: string, dados: DadosNovaCategoria): Promise<CategoriaPersonalizada> {
+  return fetch(`${BASE_URL}/api/categorias`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone, ...dados }),
+  }).then(tratarResposta)
+}
+
+export function excluirCategoriaCustomizada(id: number | string, telefone: string) {
+  return fetch(`${BASE_URL}/api/categorias/${id}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone }),
+  }).then(tratarResposta)
+}
