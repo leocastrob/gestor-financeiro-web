@@ -116,7 +116,8 @@ const salvar = () => {
       <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5 font-mono">
         {{ parcelasPagas }}/{{ divida.total_parcelas }} parcelas
         <span v-if="divida.ativa">· faltam {{ formatarMoeda(valorRestante) }}</span>
-        <span v-else class="text-emerald-500 dark:text-emerald-400 font-semibold">· quitada 🎉</span>
+        <span v-else-if="parcelasPagas >= divida.total_parcelas" class="text-emerald-500 dark:text-emerald-400 font-semibold">· quitada 🎉</span>
+        <span v-else class="text-slate-400 dark:text-slate-500 font-semibold">· inativa</span>
       </p>
     </div>
   </div>
