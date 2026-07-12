@@ -2,7 +2,6 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useGastosStore } from '../stores/gastos'
 import { useMetasStore } from '../stores/metas'
-import { formatarMoeda } from '../utils/formatarMoeda'
 import { MESES } from '../constants/meses'
 import AppShell from '../layouts/AppShell.vue'
 import GraficoCategorias from '../components/GraficoCategorias.vue'

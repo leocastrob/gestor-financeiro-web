@@ -25,8 +25,8 @@ const carregandoPreview = ref(false)
 const colunaData = ref('')
 const colunaDescricao = ref('')
 const colunaValor = ref('')
+const colunaIdentificador = ref('')
 const formatoData = ref('DD/MM/YYYY')
-const separadorDecimal = ref(',')
 const nomeBanco = ref('')
 
 // --- Resultado ---
@@ -99,8 +99,8 @@ const importar = async () => {
       colunaData: colunaData.value,
       colunaDescricao: colunaDescricao.value,
       colunaValor: colunaValor.value,
+      colunaIdentificador: colunaIdentificador.value || undefined,
       formatoData: formatoData.value,
-      separadorDecimal: separadorDecimal.value,
       nomeBanco: nomeBanco.value || undefined,
     }
   }
@@ -127,6 +127,7 @@ const reiniciar = () => {
   colunaData.value = ''
   colunaDescricao.value = ''
   colunaValor.value = ''
+  colunaIdentificador.value = ''
   nomeBanco.value = ''
 }
 </script>
@@ -324,24 +325,26 @@ const reiniciar = () => {
               </select>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Formato de data</label>
-                <select v-model="formatoData"
-                  class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-violet-400">
-                  <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                  <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                  <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Sep. decimal</label>
-                <select v-model="separadorDecimal"
-                  class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-violet-400">
-                  <option value=",">, (vírgula)</option>
-                  <option value=".">. (ponto)</option>
-                </select>
-              </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Formato de data</label>
+              <select v-model="formatoData"
+                class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-violet-400">
+                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">🔑 Coluna de identificador (opcional)</label>
+              <select v-model="colunaIdentificador"
+                class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-violet-400">
+                <option value="">Calcular automaticamente</option>
+                <option v-for="col in preview?.colunas" :key="col" :value="col">{{ col }}</option>
+              </select>
+              <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                Se o banco expõe um ID único por transação (ex.: "Identificador"), selecione aqui para uma deduplicação mais confiável.
+              </p>
             </div>
 
             <div>

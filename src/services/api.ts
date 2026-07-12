@@ -116,8 +116,8 @@ export interface MapeamentoCSV {
   colunaData: string
   colunaDescricao: string
   colunaValor: string
+  colunaIdentificador?: string
   formatoData?: string
-  separadorDecimal?: string
   nomeBanco?: string
 }
 
