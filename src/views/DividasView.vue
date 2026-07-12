@@ -84,6 +84,7 @@ const salvarEdicao = async (id: number, dados: DadosEdicaoDivida) => {
 
 // --- Excluir ---
 const excluir = async (id: number) => {
+  if (!confirm('Excluir esta dívida? Essa ação não pode ser desfeita.')) return
   await dividasStore.excluirDivida(id, gastosStore.telefone)
 }
 
@@ -97,7 +98,8 @@ const lancarParcela = async (id: number) => {
   <AppShell>
     <div class="space-y-4">
 
-      <div class="flex items-center justify-between mb-2">
+      <div v-motion :initial="{ opacity: 0, y: 12 }" :enter="{ opacity: 1, y: 0, transition: { duration: 300 } }"
+        class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-3">
           <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-violet-500/10">
             <span class="text-xl">💳</span>

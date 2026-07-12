@@ -92,17 +92,17 @@ const salvar = () => {
         <div class="flex items-center gap-1 flex-shrink-0">
           <button v-if="divida.ativa" @click="emit('lancar-parcela', divida.id)"
             class="p-2 text-slate-400 dark:text-slate-500 hover:text-sky-500 dark:hover:text-sky-400 hover:bg-sky-400/10 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60"
-            title="Lançar parcela agora">
+            title="Lançar parcela agora" aria-label="Lançar parcela agora">
             ⏩
           </button>
           <button @click="iniciarEdicao"
             class="p-2 text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-400/10 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
-            title="Editar dívida">
+            title="Editar dívida" aria-label="Editar dívida">
             ✏️
           </button>
           <button @click="emit('excluir', divida.id)"
             class="p-2 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60"
-            title="Excluir dívida">
+            title="Excluir dívida" aria-label="Excluir dívida">
             🗑️
           </button>
         </div>

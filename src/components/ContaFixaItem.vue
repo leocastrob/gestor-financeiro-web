@@ -95,17 +95,17 @@ const salvar = () => {
         <div class="flex items-center gap-1 flex-shrink-0">
           <button v-if="conta.ativa && !conta.paga_neste_mes" @click="emit('lancar-pagamento', conta.id)"
             class="p-2 text-slate-400 dark:text-slate-500 hover:text-emerald-500 dark:hover:text-emerald-400 hover:bg-emerald-400/10 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
-            title="Lançar pagamento agora">
+            title="Lançar pagamento agora" aria-label="Lançar pagamento agora">
             ✅
           </button>
           <button @click="iniciarEdicao"
             class="p-2 text-slate-400 dark:text-slate-500 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-400/10 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
-            title="Editar conta fixa">
+            title="Editar conta fixa" aria-label="Editar conta fixa">
             ✏️
           </button>
           <button @click="emit('excluir', conta.id)"
             class="p-2 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60"
-            title="Excluir conta fixa">
+            title="Excluir conta fixa" aria-label="Excluir conta fixa">
             🗑️
           </button>
         </div>

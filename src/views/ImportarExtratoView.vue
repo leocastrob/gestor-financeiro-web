@@ -71,15 +71,12 @@ const enviarPreview = async () => {
   if (!arquivo.value) return
   erroPreview.value = null
   carregandoPreview.value = true
-  etapa.value = 'preview'
 
   try {
     preview.value = await api.previewExtrato(arquivo.value, gastosStore.telefone)
-
-    if (preview.value.precisaMapeamento) {
-      etapa.value = 'mapeamento'
-    }
-    // Se não precisa de mapeamento, fica na etapa 'preview' (pronto para importar)
+    // Só troca de etapa depois que os dados chegam — evita mostrar o card de
+    // preview com campos vazios enquanto a resposta da API ainda está a caminho.
+    etapa.value = preview.value.precisaMapeamento ? 'mapeamento' : 'preview'
   } catch (e) {
     erroPreview.value = e instanceof Error ? e.message : 'Erro ao analisar o arquivo.'
     etapa.value = 'upload'
@@ -213,8 +210,8 @@ const reiniciar = () => {
               <p class="text-2xl font-black text-slate-900 dark:text-white font-mono">{{ preview?.totalLinhas }}</p>
               <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold">transações</p>
             </div>
-            <div class="bg-slate-50 dark:bg-white/5 rounded-xl p-3 text-center">
-              <p class="text-2xl font-black text-violet-600 dark:text-violet-400 font-mono">{{ nomeArquivoExibido }}</p>
+            <div class="bg-slate-50 dark:bg-white/5 rounded-xl p-3 text-center min-w-0">
+              <p class="text-sm font-bold text-violet-600 dark:text-violet-400 truncate" :title="nomeArquivoExibido">{{ nomeArquivoExibido }}</p>
               <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold">arquivo</p>
             </div>
           </div>

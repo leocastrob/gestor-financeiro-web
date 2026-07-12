@@ -81,26 +81,29 @@ const excluir = (id: number | string) => {
   mostrarToast('Gasto excluído', () => gastosStore.desfazerExclusao(id))
 }
 
-// --- Toast de confirmação ---
-const toast = ref<string | null>(null)
-const acaoToast = ref<(() => void) | null>(null)
-let toastTimer: ReturnType<typeof setTimeout> | null = null
+// --- Toasts de confirmação ---
+// Fila (não um único slot): excluir dois itens em sequência não pode fazer o
+// segundo toast apagar a chance de desfazer o primeiro.
+interface ToastItem {
+  id: number
+  mensagem: string
+  acao?: () => void
+}
+
+let proximoToastId = 0
+const toasts = ref<ToastItem[]>([])
 
 const mostrarToast = (mensagem: string, acao?: () => void) => {
-  toast.value = mensagem
-  acaoToast.value = acao ?? null
-  if (toastTimer) clearTimeout(toastTimer)
-  toastTimer = setTimeout(() => {
-    toast.value = null
-    acaoToast.value = null
+  const id = proximoToastId++
+  toasts.value.push({ id, mensagem, acao })
+  setTimeout(() => {
+    toasts.value = toasts.value.filter((t) => t.id !== id)
   }, acao ? 5000 : 2200)
 }
 
-const executarAcaoToast = () => {
-  acaoToast.value?.()
-  toast.value = null
-  acaoToast.value = null
-  if (toastTimer) clearTimeout(toastTimer)
+const executarAcaoToast = (item: ToastItem) => {
+  item.acao?.()
+  toasts.value = toasts.value.filter((t) => t.id !== item.id)
 }
 </script>
 
@@ -207,16 +210,18 @@ const executarAcaoToast = () => {
       </div>
     </div>
 
-    <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-2"
-      enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-150 ease-in"
-      leave-from-class="opacity-100" leave-to-class="opacity-0">
-      <div v-if="toast"
-        class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-sm font-semibold px-5 py-3 rounded-2xl shadow-2xl z-50">
-        <span>{{ toast }}</span>
-        <button v-if="acaoToast" @click="executarAcaoToast" class="ml-3 font-bold text-emerald-400 dark:text-emerald-600 underline underline-offset-2">
-          Desfazer
-        </button>
-      </div>
-    </Transition>
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
+      <TransitionGroup enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-2"
+        enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100" leave-to-class="opacity-0">
+        <div v-for="item in toasts" :key="item.id"
+          class="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-sm font-semibold px-5 py-3 rounded-2xl shadow-2xl">
+          <span>{{ item.mensagem }}</span>
+          <button v-if="item.acao" @click="executarAcaoToast(item)" class="ml-3 font-bold text-emerald-400 dark:text-emerald-600 underline underline-offset-2">
+            Desfazer
+          </button>
+        </div>
+      </TransitionGroup>
+    </div>
   </AppShell>
 </template>
