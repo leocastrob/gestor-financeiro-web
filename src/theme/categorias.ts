@@ -15,6 +15,7 @@ export const CATEGORIAS_INFO: Record<string, InfoCategoria> = {
   Saúde: { cor: '#e66767', icone: '💊' },
   Moradia: { cor: '#c98500', icone: '🏠' },
   Pets: { cor: '#008300', icone: '🐾' },
+  Investimentos: { cor: '#8b5cf6', icone: '📈' },
   Outros: { cor: '#64748b', icone: '📦' },
 }
 
