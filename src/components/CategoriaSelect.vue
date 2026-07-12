@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
   SelectRoot, SelectTrigger, SelectValue, SelectIcon,
   SelectPortal, SelectContent, SelectViewport,
-  SelectItem, SelectItemText, SelectItemIndicator, SelectSeparator
+  SelectItem, SelectItemText, SelectItemIndicator, SelectSeparator,
+  DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogClose
 } from 'reka-ui'
 import { CATEGORIAS, iconeDaCategoria } from '../theme/categorias'
 import { useCategoriasStore } from '../stores/categorias'
@@ -21,6 +22,11 @@ const NOVA_CATEGORIA = '__nova__'
 const categoriasStore = useCategoriasStore()
 const gastosStore = useGastosStore()
 
+const isModalOpen = ref(false)
+const novaCategoriaNome = ref('')
+const novaCategoriaIcone = ref('🏷️')
+const salvandoCategoria = ref(false)
+
 const todasCategorias = computed(() => {
   const nomesCustomizadas = categoriasStore.categorias.map(c => c.nome)
   return [...CATEGORIAS, ...nomesCustomizadas]
@@ -28,28 +34,34 @@ const todasCategorias = computed(() => {
 
 const selectValue = computed<string>({
   get: () => (modelValue.value === '' ? AUTOMATICA : modelValue.value),
-  set: async (v) => {
+  set: (v) => {
     if (v === NOVA_CATEGORIA) {
-      const nome = window.prompt('Nome da nova categoria (máx 50 caracteres):')
-      if (!nome || !nome.trim()) return
-
-      const icone = window.prompt('Qual emoji usar para essa categoria?', '🏷️') || '🏷️'
-      
-      const sucesso = await categoriasStore.adicionarCategoria(gastosStore.telefone, {
-        nome: nome.trim(),
-        icone: icone.trim()
-      })
-      
-      if (sucesso) {
-        modelValue.value = nome.trim()
-      } else {
-        alert(categoriasStore.erro || 'Erro ao criar categoria.')
-      }
+      novaCategoriaNome.value = ''
+      novaCategoriaIcone.value = '🏷️'
+      isModalOpen.value = true
       return
     }
     modelValue.value = v === AUTOMATICA ? '' : v
   },
 })
+
+async function salvarNovaCategoria() {
+  if (!novaCategoriaNome.value.trim()) return
+
+  salvandoCategoria.value = true
+  const sucesso = await categoriasStore.adicionarCategoria(gastosStore.telefone, {
+    nome: novaCategoriaNome.value.trim(),
+    icone: novaCategoriaIcone.value.trim() || '🏷️'
+  })
+  salvandoCategoria.value = false
+  
+  if (sucesso) {
+    modelValue.value = novaCategoriaNome.value.trim()
+    isModalOpen.value = false
+  } else {
+    alert(categoriasStore.erro || 'Erro ao criar categoria.')
+  }
+}
 </script>
 
 <template>
@@ -99,5 +111,53 @@ const selectValue = computed<string>({
       </SelectContent>
     </SelectPortal>
   </SelectRoot>
+
+  <DialogRoot v-model:open="isModalOpen">
+    <DialogPortal>
+      <DialogOverlay class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 transition-opacity" />
+      <DialogContent class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-sm bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-2xl z-50">
+        <DialogTitle class="text-xl font-bold text-slate-900 dark:text-white mb-4">
+          Nova Categoria
+        </DialogTitle>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nome</label>
+            <input 
+              v-model="novaCategoriaNome"
+              type="text" 
+              maxlength="50"
+              placeholder="Ex: Faculdade, Pets..."
+              class="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Ícone (Emoji)</label>
+            <input 
+              v-model="novaCategoriaIcone"
+              type="text" 
+              maxlength="10"
+              class="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-center text-2xl"
+            />
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end gap-3">
+          <DialogClose as-child>
+            <button class="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+              Cancelar
+            </button>
+          </DialogClose>
+          <button 
+            @click="salvarNovaCategoria"
+            :disabled="salvandoCategoria || !novaCategoriaNome.trim()"
+            class="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold rounded-xl shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-50"
+          >
+            {{ salvandoCategoria ? 'Salvando...' : 'Salvar' }}
+          </button>
+        </div>
+      </DialogContent>
+    </DialogPortal>
+  </DialogRoot>
 </template>
 
