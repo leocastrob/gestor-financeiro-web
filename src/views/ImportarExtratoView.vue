@@ -131,7 +131,7 @@ const reiniciar = () => {
 
 <template>
   <AppShell>
-    <div class="space-y-4">
+    <div class="space-y-4 lg:max-w-2xl">
 
       <!-- Título da página -->
       <div class="flex items-center gap-3 mb-2">

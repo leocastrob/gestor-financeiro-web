@@ -109,7 +109,7 @@ const executarAcaoToast = (item: ToastItem) => {
 
 <template>
   <AppShell>
-    <div class="space-y-3">
+    <div class="space-y-3 lg:max-w-2xl">
 
       <!-- Botão principal: muda label e gradiente conforme tipo selecionado -->
       <div v-if="!adicionandoAberto" class="flex gap-2 mb-2">

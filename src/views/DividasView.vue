@@ -96,7 +96,7 @@ const lancarParcela = async (id: number) => {
 
 <template>
   <AppShell>
-    <div class="space-y-4">
+    <div class="space-y-4 lg:max-w-2xl">
 
       <div v-motion :initial="{ opacity: 0, y: 12 }" :enter="{ opacity: 1, y: 0, transition: { duration: 300 } }"
         class="flex items-center justify-between mb-2">
