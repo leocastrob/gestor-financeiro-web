@@ -131,3 +131,20 @@ O app guarda o telefone do usuário em `localStorage` sem token de sessão real 
 **Consequência do #6 para o processo de deploy:** a rota nova (`PATCH /api/categorias/:id`) precisa do deploy de código de sempre na API — não é automático só por estar no repositório (mesmo aviso já registrado na spec da reforma para a rota de metas). Nenhum passo manual de schema é necessário desta vez.
 
 **Verificação rodada nesta sessão:** `npm test` (28 testes) + `npm run lint:eslint` + `vue-tsc --build` + `npm run build` em `gestor-financeiro-web`, e `npm test` (74 testes) em `gestor-financeiro-api` — todos verdes antes e depois das mudanças. Não houve verificação visual manual no navegador (sem ferramenta de browser disponível nesta sessão).
+
+---
+
+## Segunda passada — revisão do código novo criado nesta sessão (2026-07-12)
+
+O código escrito para implementar o #6 (`CategoriasView.vue`, `CategoriaPersonalizadaItem.vue`, `stores/categorias.ts`, `CategoriaSelect.vue`) nunca tinha passado pelo mesmo checklist da Fase A — foi aplicado o mesmo processo de revisão nele, já que é UI nova tão sujeita a inconsistência quanto qualquer feature anterior.
+
+### Achado corrigido
+
+**`stores/categorias.ts` usava um único `erro` para falha de carregamento e falha de ação** — diferente do padrão já estabelecido em `stores/gastos.ts`/`dividas.ts`/`contasFixas.ts`/`metas.ts`, que separam `erro` (bloqueante, falha ao listar) de `erroAcao` (banner dispensável, falha ao criar/editar/excluir). Consequência prática em `CategoriasView.vue`: se a listagem falhasse, a tela mostrava ao mesmo tempo o banner de erro **e** a mensagem "Nenhuma categoria personalizada ainda" (a cadeia `v-if`/`v-else-if` não incluía o erro, só `carregando`/vazio/lista). Corrigido: store agora tem `erro`/`erroAcao` separados, `CategoriasView.vue` segue a mesma cadeia condicional de `DividasView.vue` (carregando → erro → vazio → lista), e `CategoriaSelect.vue` passou a usar `erroAcao` (é uma ação de criar, não uma carga de lista). Formulário de criar/editar agora limpa `erroAcao` ao abrir, evitando banner de tentativa anterior sobrando na tela.
+
+### Achados registrados, não corrigidos (fora do escopo desta rodada)
+
+- **`abrirNovaDivida`/`abrirNovaConta` (`DividasView.vue`/`ContasFixasView.vue`) não limpam `erroAcao` ao reabrir o formulário** — mesma classe de problema do achado acima, só que pré-existente (não introduzido nesta sessão). Se uma tentativa de criar falhar, cancelar e reabrir o formulário mantém o banner de erro antigo na tela. Baixo impacto (o banner "envelhecido" não impede nada, só confunde), mas vale nivelar com o que foi corrigido em Categorias na próxima vez que alguém mexer nessas telas.
+- **Nome de categoria personalizada pode colidir com o nome de uma categoria fixa do sistema** (ex.: criar uma categoria personalizada chamada "Alimentação"). A `UNIQUE KEY (telefone, nome)` em `categorias_personalizadas` não sabe nada sobre as 8 categorias fixas (elas não vivem nessa tabela), então o back-end aceita o cadastro sem erro — e `corDaCategoria`/`iconeDaCategoria` sempre resolvem o nome fixo primeiro, então a categoria personalizada fica "invisível" atrás da fixa (aparece com a cor/ícone do sistema, não os dela). Baixo impacto na prática (exige o usuário digitar de propósito um nome que já existe), mas seria uma validação simples de adicionar no POST/PATCH de `routes/api/categorias/index.js` se quiser fechar essa lacuna.
+
+**Verificação após a segunda passada:** `npm test` (28 testes), `lint:eslint`, `vue-tsc --build` e `npm run build` novamente verdes.

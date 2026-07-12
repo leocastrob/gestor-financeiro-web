@@ -21,6 +21,7 @@ const abrirNovaCategoria = () => {
   adicionandoAberto.value = true
   novoNome.value = ''
   novoIcone.value = '🏷️'
+  categoriasStore.erroAcao = null
 }
 
 const cancelarNovaCategoria = () => {
@@ -46,6 +47,7 @@ const salvando = ref(false)
 
 const iniciarEdicao = (categoria: CategoriaPersonalizada) => {
   editandoId.value = categoria.id
+  categoriasStore.erroAcao = null
 }
 
 const cancelarEdicao = () => {
@@ -106,13 +108,17 @@ const excluir = async (id: number) => {
         </div>
       </div>
 
-      <div v-if="categoriasStore.erro" class="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl">
-        <p class="text-red-500 dark:text-red-400 text-sm font-semibold">{{ categoriasStore.erro }}</p>
+      <div v-if="categoriasStore.erroAcao" class="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl">
+        <p class="text-red-500 dark:text-red-400 text-sm font-semibold">{{ categoriasStore.erroAcao }}</p>
       </div>
 
       <div v-if="categoriasStore.carregando" class="space-y-3 animate-pulse">
         <div class="h-16 rounded-2xl bg-slate-200/70 dark:bg-white/5"></div>
         <div class="h-16 rounded-2xl bg-slate-200/70 dark:bg-white/5"></div>
+      </div>
+
+      <div v-else-if="categoriasStore.erro" class="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl">
+        <p class="text-red-500 dark:text-red-400 text-sm font-semibold">{{ categoriasStore.erro }}</p>
       </div>
 
       <div v-else-if="categoriasStore.categorias.length === 0" class="min-h-[30vh] flex flex-col items-center justify-center text-center">

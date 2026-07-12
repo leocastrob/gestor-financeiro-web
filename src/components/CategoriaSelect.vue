@@ -38,7 +38,7 @@ const selectValue = computed<string>({
     if (v === NOVA_CATEGORIA) {
       novaCategoriaNome.value = ''
       novaCategoriaIcone.value = '🏷️'
-      categoriasStore.erro = null
+      categoriasStore.erroAcao = null
       isModalOpen.value = true
       return
     }
@@ -148,8 +148,8 @@ async function salvarNovaCategoria() {
           </span>
         </div>
 
-        <div v-if="categoriasStore.erro" class="mt-4 bg-red-500/10 border border-red-500/20 p-3 rounded-xl">
-          <p class="text-red-500 dark:text-red-400 text-sm font-semibold">{{ categoriasStore.erro }}</p>
+        <div v-if="categoriasStore.erroAcao" class="mt-4 bg-red-500/10 border border-red-500/20 p-3 rounded-xl">
+          <p class="text-red-500 dark:text-red-400 text-sm font-semibold">{{ categoriasStore.erroAcao }}</p>
         </div>
 
         <div class="mt-6 flex justify-end gap-3">
