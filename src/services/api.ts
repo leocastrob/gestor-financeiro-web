@@ -156,3 +156,74 @@ export function importarExtrato(
     body: form,
   }).then(tratarResposta)
 }
+
+// --- Dívidas parceladas (Feature 2) ---
+
+export interface Divida {
+  id: number
+  telefone: string
+  descricao: string
+  categoria: string
+  valor_parcela: number | string
+  total_parcelas: number
+  data_primeira_parcela: string
+  ativa: number | boolean
+  criado_em: string
+  parcelas_pagas: number
+}
+
+export interface DadosNovaDivida {
+  descricao: string
+  categoria?: string
+  valor_parcela: number
+  total_parcelas: number
+  data_primeira_parcela: string
+}
+
+export interface DadosEdicaoDivida {
+  descricao?: string
+  categoria?: string
+  valor_parcela?: number
+  total_parcelas?: number
+  data_primeira_parcela?: string
+}
+
+export interface LancarParcelaResponse {
+  sucesso: boolean
+  jaLancada: boolean
+  quitada: boolean
+}
+
+export function buscarDividas(telefone: string): Promise<Divida[]> {
+  return fetch(`${BASE_URL}/api/dividas/${telefone}`).then(tratarResposta)
+}
+
+export function criarDivida(telefone: string, dados: DadosNovaDivida): Promise<Divida> {
+  return fetch(`${BASE_URL}/api/dividas`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone, ...dados }),
+  }).then(tratarResposta)
+}
+
+export function editarDivida(id: number | string, telefone: string, dados: DadosEdicaoDivida) {
+  return fetch(`${BASE_URL}/api/dividas/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone, ...dados }),
+  }).then(tratarResposta)
+}
+
+export function excluirDivida(id: number | string, telefone: string) {
+  return fetch(`${BASE_URL}/api/dividas/${id}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone }),
+  }).then(tratarResposta)
+}
+
+export function lancarParcela(id: number | string): Promise<LancarParcelaResponse> {
+  return fetch(`${BASE_URL}/api/dividas/${id}/lancar-parcela`, {
+    method: 'POST',
+  }).then(tratarResposta)
+}
