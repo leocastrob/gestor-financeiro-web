@@ -4,12 +4,14 @@ import { useRoute, useRouter } from 'vue-router'
 import { TabsRoot, TabsList, TabsTrigger } from 'reka-ui'
 import { useGastosStore } from '../stores/gastos'
 import { useMetasStore } from '../stores/metas'
+import { useDividasStore } from '../stores/dividas'
 import { MESES } from '../constants/meses'
 
 const route = useRoute()
 const router = useRouter()
 const gastosStore = useGastosStore()
 const metasStore = useMetasStore()
+const dividasStore = useDividasStore()
 
 // AppShell é remontado a cada troca de aba (Dashboard <-> Lançamentos são rotas
 // diferentes, cada uma com sua própria instância de AppShell) — por isso é o
@@ -24,6 +26,7 @@ const ABAS = [
   { valor: 'painel', rota: '/painel', rotulo: 'Dashboard' },
   { valor: 'lancamentos', rota: '/lancamentos', rotulo: 'Lançamentos' },
   { valor: 'importar', rota: '/importar', rotulo: '📄 Importar' },
+  { valor: 'dividas', rota: '/dividas', rotulo: '💳 Dívidas' },
 ] as const
 
 const abaAtiva = computed(() => ABAS.find((a) => a.rota === route.path)?.valor ?? 'painel')
@@ -44,6 +47,7 @@ const telefoneFormatado = computed(() => {
 const sair = () => {
   gastosStore.logout()
   metasStore.resetar()
+  dividasStore.resetar()
   router.push('/')
 }
 </script>
