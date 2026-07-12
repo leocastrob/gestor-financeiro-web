@@ -19,8 +19,8 @@ export const useCategoriasStore = defineStore('categorias', () => {
     erro.value = null
     try {
       categorias.value = await buscarCategoriasCustomizadas(telefone)
-    } catch (e: any) {
-      erro.value = e.message
+    } catch (e) {
+      erro.value = (e as Error).message
     } finally {
       carregando.value = false
     }
@@ -32,8 +32,8 @@ export const useCategoriasStore = defineStore('categorias', () => {
       const nova = await criarCategoriaCustomizada(telefone, dados)
       categorias.value.push(nova)
       return true
-    } catch (e: any) {
-      erro.value = e.message
+    } catch (e) {
+      erro.value = (e as Error).message
       return false
     }
   }
@@ -44,8 +44,8 @@ export const useCategoriasStore = defineStore('categorias', () => {
       await excluirCategoriaCustomizada(id, telefone)
       categorias.value = categorias.value.filter(c => c.id !== id)
       return true
-    } catch (e: any) {
-      erro.value = e.message
+    } catch (e) {
+      erro.value = (e as Error).message
       return false
     }
   }

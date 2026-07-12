@@ -34,7 +34,7 @@ export function iconeDaCategoria(categoria: string): string {
     const store = useCategoriasStore()
     const custom = store.categorias.find(c => c.nome === categoria)
     if (custom) return custom.icone
-  } catch (e) {
+  } catch {
     // Caso seja chamado fora de contexto Vue/Pinia ativo
   }
   
