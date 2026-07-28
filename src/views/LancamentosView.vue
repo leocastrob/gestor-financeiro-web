@@ -7,6 +7,7 @@ import AppShell from '../layouts/AppShell.vue'
 import GastoItem from '../components/GastoItem.vue'
 import CategoriaSelect from '../components/CategoriaSelect.vue'
 import ExportarMenu from '../components/ExportarMenu.vue'
+import { hojeISO } from '../utils/dataInput'
 
 const gastosStore = useGastosStore()
 
@@ -16,6 +17,7 @@ const novaDescricao = ref('')
 const novaCategoria = ref('')
 const novoValor = ref('')
 const novoTipo = ref<'despesa' | 'receita'>('despesa')
+const novaData = ref(hojeISO())
 const criando = ref(false)
 
 const novoGastoValido = computed(() => {
@@ -29,6 +31,7 @@ const abrirNovoGasto = () => {
   novaCategoria.value = ''
   novoValor.value = ''
   novoTipo.value = 'despesa'
+  novaData.value = hojeISO()
 }
 
 const cancelarNovoGasto = () => {
@@ -43,6 +46,7 @@ const confirmarNovoGasto = async () => {
     valor: Number(novoValor.value.replace(',', '.')),
     categoria: novaCategoria.value || undefined,
     tipo: novoTipo.value,
+    data: novaData.value || undefined,
   })
   criando.value = false
   if (criado) {
@@ -65,13 +69,20 @@ const cancelarEdicao = () => {
   editandoId.value = null
 }
 
+const MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+
 const salvarEdicao = async (id: number | string, dados: DadosEdicaoGasto) => {
   salvando.value = true
-  const sucesso = await gastosStore.editarGasto(id, dados)
+  const destino = await gastosStore.editarGasto(id, dados)
   salvando.value = false
-  if (sucesso) {
+  if (destino) {
     editandoId.value = null
-    mostrarToast('Gasto atualizado ✓')
+    const mudouDeMes = destino.mes !== gastosStore.filtroMes || destino.ano !== gastosStore.filtroAno
+    mostrarToast(
+      mudouDeMes
+        ? `Lançamento movido para ${MESES_CURTOS[destino.mes - 1]}/${destino.ano}`
+        : 'Gasto atualizado ✓',
+    )
   }
 }
 
@@ -154,6 +165,11 @@ const executarAcaoToast = (item: ToastItem) => {
             <input v-model="novoValor" type="text" inputmode="decimal" placeholder="Valor"
               class="w-24 sm:w-28 flex-shrink-0 min-w-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400" />
           </div>
+          <label class="flex items-center gap-3 text-sm">
+            <span class="text-slate-500 dark:text-slate-400 font-medium flex-shrink-0">Data</span>
+            <input v-model="novaData" type="date" :max="hojeISO()"
+              class="flex-1 min-w-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400" />
+          </label>
           <div class="flex justify-end gap-2">
             <button @click="cancelarNovoGasto" :disabled="criando"
               class="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 rounded-lg">

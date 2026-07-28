@@ -4,6 +4,7 @@ import type { Transacao } from '../stores/gastos'
 import type { DadosEdicaoGasto } from '../services/api'
 import { corDaCategoria, iconeDaCategoria } from '../theme/categorias'
 import { formatarMoeda } from '../utils/formatarMoeda'
+import { hojeISO, paraInputDate } from '../utils/dataInput'
 import CategoriaSelect from './CategoriaSelect.vue'
 
 const props = defineProps<{
@@ -22,6 +23,10 @@ const emit = defineEmits<{
 const formDescricao = ref('')
 const formCategoria = ref('')
 const formValor = ref('')
+const formData = ref('')
+// Guarda a data com que o formulário abriu: só mandamos `data` para a API se
+// ela realmente mudou, evitando uma recarga de lista desnecessária.
+const dataOriginal = ref('')
 
 // Recarrega o formulário sempre que este item entra em modo de edição
 watch(
@@ -31,15 +36,19 @@ watch(
       formDescricao.value = props.gasto.descricao
       formCategoria.value = props.gasto.categoria || 'Outros'
       formValor.value = String(props.gasto.valor)
+      dataOriginal.value = paraInputDate(props.gasto.data)
+      formData.value = dataOriginal.value
     }
   },
 )
 
 const salvar = () => {
+  const dataMudou = formData.value !== '' && formData.value !== dataOriginal.value
   emit('salvar', props.gasto.id, {
     descricao: formDescricao.value.trim(),
     categoria: formCategoria.value,
     valor: Number(formValor.value.replace(',', '.')),
+    data: dataMudou ? formData.value : undefined,
   })
 }
 </script>
@@ -56,6 +65,11 @@ const salvar = () => {
         <input v-model="formValor" type="text" inputmode="decimal" placeholder="Valor"
           class="w-24 sm:w-28 flex-shrink-0 min-w-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400" />
       </div>
+      <label class="flex items-center gap-3 text-sm">
+        <span class="text-slate-500 dark:text-slate-400 font-medium flex-shrink-0">Data</span>
+        <input v-model="formData" type="date" :max="hojeISO()"
+          class="flex-1 min-w-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400" />
+      </label>
       <div class="flex justify-end gap-2">
         <button @click="emit('cancelar-edicao')" :disabled="salvando"
           class="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 rounded-lg">
