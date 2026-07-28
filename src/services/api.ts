@@ -22,6 +22,8 @@ export interface DadosEdicaoGasto {
   categoria?: string
   valor?: number
   tipo?: 'despesa' | 'receita'
+  /** Dia do lançamento em AAAA-MM-DD. Ausente = não altera a data. */
+  data?: string
 }
 
 export interface DadosNovoGasto {
@@ -29,6 +31,8 @@ export interface DadosNovoGasto {
   valor: number
   categoria?: string
   tipo?: 'despesa' | 'receita'
+  /** Dia do lançamento em AAAA-MM-DD. Ausente = a API usa o dia atual. */
+  data?: string
 }
 
 export function buscarGastos(telefone: string, mes?: number, ano?: number) {

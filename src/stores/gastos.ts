@@ -154,18 +154,32 @@ export const useGastosStore = defineStore('gastos', () => {
     idsExcluindo.value = idsExcluindo.value.filter((i) => i !== id)
   }
 
-  // Ação: Edita descrição/categoria/valor de um gasto
-  const editarGasto = async (id: number | string, dados: DadosEdicaoGasto) => {
+  // Ação: Edita descrição/categoria/valor/data de um gasto.
+  // Devolve o mês/ano em que o lançamento ficou, ou null se falhou.
+  const editarGasto = async (
+    id: number | string,
+    dados: DadosEdicaoGasto,
+  ): Promise<{ mes: number; ano: number } | null> => {
     erroAcao.value = null
     try {
       await api.editarGasto(id, telefone.value, dados)
+
+      if (dados.data) {
+        // Recarrega em vez de aplicar localmente: a data nova pode tirar o item
+        // do mês em exibição, e o AAAA-MM-DD cru não serve para o campo `data`
+        // do item, que a tela lê como timestamp.
+        const [ano, mes] = dados.data.split('-').map(Number)
+        await buscarGastos(filtroMes.value, filtroAno.value)
+        return { mes, ano }
+      }
+
       const item = transacoes.value.find((t) => t.id === id)
       if (item) Object.assign(item, dados)
-      return true
+      return { mes: filtroMes.value, ano: filtroAno.value }
     } catch (e) {
       console.error(e)
       erroAcao.value = 'Erro ao editar o gasto. Tente novamente.'
-      return false
+      return null
     }
   }
 
