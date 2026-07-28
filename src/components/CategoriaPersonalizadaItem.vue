@@ -2,12 +2,17 @@
 import { ref } from 'vue'
 import type { CategoriaPersonalizada, DadosEdicaoCategoria } from '../services/api'
 import { corDaCategoria } from '../theme/categorias'
+import CorSelect, { type CorEmUso } from './CorSelect.vue'
 
-const props = defineProps<{
-  categoria: CategoriaPersonalizada
-  editando: boolean
-  salvando: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    categoria: CategoriaPersonalizada
+    editando: boolean
+    salvando: boolean
+    coresEmUso?: CorEmUso[]
+  }>(),
+  { coresEmUso: () => [] },
+)
 
 const emit = defineEmits<{
   'iniciar-edicao': [categoria: CategoriaPersonalizada]
@@ -18,10 +23,12 @@ const emit = defineEmits<{
 
 const formNome = ref('')
 const formIcone = ref('')
+const formCor = ref<string | null>(null)
 
 const iniciarEdicao = () => {
   formNome.value = props.categoria.nome
   formIcone.value = props.categoria.icone
+  formCor.value = props.categoria.cor
   emit('iniciar-edicao', props.categoria)
 }
 
@@ -29,6 +36,7 @@ const salvar = () => {
   emit('salvar', props.categoria.id, {
     nome: formNome.value.trim(),
     icone: formIcone.value.trim() || '🏷️',
+    cor: formCor.value,
   })
 }
 </script>
@@ -37,12 +45,15 @@ const salvar = () => {
   <div class="p-4 bg-white/70 dark:bg-white/5 backdrop-blur-sm rounded-2xl border border-slate-200/70 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all duration-200">
 
     <!-- Modo edição -->
-    <div v-if="editando" class="flex gap-2 sm:gap-3 items-start">
-      <input v-model="formIcone" type="text" maxlength="10" placeholder="🏷️"
-        class="w-16 flex-shrink-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-lg text-center rounded-xl px-2 py-2 outline-none focus:border-emerald-400" />
-      <input v-model="formNome" type="text" maxlength="50" placeholder="Nome da categoria"
-        class="flex-1 min-w-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400" />
-      <div class="flex gap-1 flex-shrink-0">
+    <div v-if="editando" class="space-y-3">
+      <div class="flex gap-2 sm:gap-3 items-start">
+        <input v-model="formIcone" type="text" maxlength="10" placeholder="🏷️"
+          class="w-16 flex-shrink-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-lg text-center rounded-xl px-2 py-2 outline-none focus:border-emerald-400" />
+        <input v-model="formNome" type="text" maxlength="50" placeholder="Nome da categoria"
+          class="flex-1 min-w-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 outline-none focus:border-emerald-400" />
+      </div>
+      <CorSelect v-model="formCor" :em-uso="coresEmUso" />
+      <div class="flex justify-end gap-2">
         <button @click="emit('cancelar-edicao')" :disabled="salvando"
           class="px-3 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 rounded-lg">
           Cancelar

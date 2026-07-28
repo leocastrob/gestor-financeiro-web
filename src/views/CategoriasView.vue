@@ -4,6 +4,7 @@ import { useGastosStore } from '../stores/gastos'
 import { useCategoriasStore } from '../stores/categorias'
 import AppShell from '../layouts/AppShell.vue'
 import CategoriaPersonalizadaItem from '../components/CategoriaPersonalizadaItem.vue'
+import CorSelect, { type CorEmUso } from '../components/CorSelect.vue'
 import type { CategoriaPersonalizada, DadosEdicaoCategoria } from '../services/api'
 
 const gastosStore = useGastosStore()
@@ -13,6 +14,7 @@ const categoriasStore = useCategoriasStore()
 const adicionandoAberto = ref(false)
 const novoNome = ref('')
 const novoIcone = ref('🏷️')
+const novaCor = ref<string | null>(null)
 const criando = ref(false)
 
 const novaCategoriaValida = computed(() => novoNome.value.trim().length > 0)
@@ -21,6 +23,7 @@ const abrirNovaCategoria = () => {
   adicionandoAberto.value = true
   novoNome.value = ''
   novoIcone.value = '🏷️'
+  novaCor.value = null
   categoriasStore.erroAcao = null
 }
 
@@ -34,6 +37,7 @@ const confirmarNovaCategoria = async () => {
   const criada = await categoriasStore.adicionarCategoria(gastosStore.telefone, {
     nome: novoNome.value.trim(),
     icone: novoIcone.value.trim() || '🏷️',
+    cor: novaCor.value,
   })
   criando.value = false
   if (criada) {
@@ -44,6 +48,13 @@ const confirmarNovaCategoria = async () => {
 // --- Edição inline ---
 const editandoId = ref<number | null>(null)
 const salvando = ref(false)
+
+// Cores já escolhidas por outras categorias, para o seletor sinalizar.
+// idIgnorado evita que a categoria em edição veja a própria cor como ocupada.
+const coresEmUso = (idIgnorado?: number): CorEmUso[] =>
+  categoriasStore.categorias
+    .filter((c) => c.cor !== null && c.id !== idIgnorado)
+    .map((c) => ({ cor: c.cor!, nome: c.nome, icone: c.icone }))
 
 const iniciarEdicao = (categoria: CategoriaPersonalizada) => {
   editandoId.value = categoria.id
@@ -96,6 +107,7 @@ const excluir = async (id: number) => {
           <input v-model="novoNome" type="text" maxlength="50" placeholder="Nome (ex: Faculdade, Pets...)"
             class="flex-1 min-w-0 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400" />
         </div>
+        <CorSelect v-model="novaCor" :em-uso="coresEmUso()" />
         <div class="flex justify-end gap-2">
           <button @click="cancelarNovaCategoria" :disabled="criando"
             class="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 rounded-lg">
@@ -135,6 +147,7 @@ const excluir = async (id: number) => {
           :categoria="categoria"
           :editando="editandoId === categoria.id"
           :salvando="salvando"
+          :cores-em-uso="coresEmUso(categoria.id)"
           @iniciar-edicao="iniciarEdicao"
           @cancelar-edicao="cancelarEdicao"
           @salvar="salvarEdicao"
