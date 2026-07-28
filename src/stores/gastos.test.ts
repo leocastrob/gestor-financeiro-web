@@ -107,7 +107,7 @@ describe('useGastosStore — editar com data', () => {
     const destino = await store.editarGasto(1, { descricao: 'feira' })
 
     expect(api.buscarGastos).not.toHaveBeenCalled()
-    expect(store.transacoes[0].descricao).toBe('feira')
+    expect(store.transacoes[0]?.descricao).toBe('feira')
     expect(destino).toEqual({ mes: store.filtroMes, ano: store.filtroAno })
   })
 

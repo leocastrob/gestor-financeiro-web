@@ -168,7 +168,9 @@ export const useGastosStore = defineStore('gastos', () => {
         // Recarrega em vez de aplicar localmente: a data nova pode tirar o item
         // do mês em exibição, e o AAAA-MM-DD cru não serve para o campo `data`
         // do item, que a tela lê como timestamp.
-        const [ano, mes] = dados.data.split('-').map(Number)
+        const partes = dados.data.split('-')
+        const ano = Number(partes[0])
+        const mes = Number(partes[1])
         await buscarGastos(filtroMes.value, filtroAno.value)
         return { mes, ano }
       }
