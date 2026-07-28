@@ -312,6 +312,8 @@ export interface CategoriaPersonalizada {
   telefone: string
   nome: string
   icone: string
+  /** Cor escolhida em #rrggbb, ou null para cor automática (hash do nome). */
+  cor: string | null
   tipo: 'despesa' | 'receita'
   criado_em: string
 }
@@ -320,11 +322,13 @@ export interface DadosNovaCategoria {
   nome: string
   icone?: string
   tipo?: 'despesa' | 'receita'
+  cor?: string | null
 }
 
 export interface DadosEdicaoCategoria {
   nome?: string
   icone?: string
+  cor?: string | null
 }
 
 export function buscarCategoriasCustomizadas(telefone: string): Promise<CategoriaPersonalizada[]> {

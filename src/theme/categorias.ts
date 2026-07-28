@@ -40,7 +40,9 @@ export function corDaCategoria(categoria: string): string {
 
   try {
     const store = useCategoriasStore()
-    if (store.categorias.some(c => c.nome === categoria)) return corPersonalizada(categoria)
+    const custom = store.categorias.find(c => c.nome === categoria)
+    // Cor escolhida pelo usuário vence; sem escolha, cai no hash do nome.
+    if (custom) return custom.cor || corPersonalizada(categoria)
   } catch {
     // Caso seja chamado fora de contexto Vue/Pinia ativo
   }
